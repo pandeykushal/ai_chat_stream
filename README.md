@@ -155,20 +155,45 @@ class MyProvider extends LlmProvider {
 The same interface makes testing trivial — inject a fake provider, no HTTP, no
 keys (see `test/mock_provider.dart`).
 
-## Theming
+## Customizing the look
 
-The chat follows your app's `Theme` automatically (light/dark). Override
-anything:
+Everything your users see is overridable: **colors, the logo, and the icons.**
+
+**Colors** — the chat follows your app's `Theme` automatically (light/dark).
+Override any colour via `AiChatTheme`, including a dedicated header colour:
 
 ```dart
 AiChatView(
   controller: controller,
   theme: AiChatTheme.fromTheme(Theme.of(context)).copyWith(
     userBubbleColor: Colors.indigo,
+    accentColor: Colors.indigo,       // send button, links, launcher
+    headerColor: const Color(0xFF14B8A6),  // bubble panel header bar
+    headerTextColor: Colors.white,
     bubbleRadius: const BorderRadius.all(Radius.circular(12)),
   ),
 );
 ```
+
+**Logo & icons** — pass an `AiChatIcons`. Each slot takes *any widget*, so a
+brand logo can be an `Image.asset`, an SVG, a `CircleAvatar`, or an `Icon`:
+
+```dart
+AiChatBubble(
+  controller: controller,
+  icons: AiChatIcons(
+    launcher: Image.asset('assets/logo.png'),              // the floating bubble
+    avatar: const CircleAvatar(                            // the panel header logo
+      backgroundImage: AssetImage('assets/logo.png'),
+    ),
+    send: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+    stop: const Icon(Icons.stop_circle_rounded, color: Colors.white, size: 22),
+  ),
+);
+```
+
+`AiChatView` takes the same `icons` (its `send`/`stop` slots) and `theme`. You
+can also override the whole message renderer with `contentBuilder`.
 
 Need full CommonMark? Pass a `contentBuilder` and render with your preferred
 Markdown package; the built-in renderer handles the common cases

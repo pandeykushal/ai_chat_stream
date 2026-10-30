@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../controller/chat_controller.dart';
+import 'chat_icons.dart';
 import 'chat_input_bar.dart';
 import 'chat_theme.dart';
 import 'message_bubble.dart';
@@ -32,11 +33,11 @@ class AiChatBubble extends StatefulWidget {
     super.key,
     required this.controller,
     this.theme,
+    this.icons = const AiChatIcons(),
     this.contentBuilder,
     this.alignment = Alignment.bottomRight,
     this.margin = const EdgeInsets.all(16),
     this.bubbleSize = 56,
-    this.bubbleIcon,
     this.panelSize = const Size(360, 520),
     this.title = 'Assistant',
     this.subtitle,
@@ -54,6 +55,10 @@ class AiChatBubble extends StatefulWidget {
   /// Visual theme. Defaults to one derived from the ambient [Theme].
   final AiChatTheme? theme;
 
+  /// Overridable logos / glyphs: launcher logo, header avatar, send & stop
+  /// icons. Leave slots null to keep the defaults.
+  final AiChatIcons icons;
+
   /// Optional custom renderer for message content.
   final MessageContentBuilder? contentBuilder;
 
@@ -65,9 +70,6 @@ class AiChatBubble extends StatefulWidget {
 
   /// Diameter of the launcher.
   final double bubbleSize;
-
-  /// Icon inside the launcher (defaults to a chat glyph).
-  final Widget? bubbleIcon;
 
   /// Desired panel size; clamped to fit the screen with [margin].
   final Size panelSize;
@@ -254,7 +256,7 @@ class _BubbleBodyState extends State<_BubbleBody>
         child: _LauncherButton(
           theme: theme,
           size: size,
-          icon: widget.host.bubbleIcon,
+          icon: widget.host.icons.launcher,
           unread: widget.host.showUnreadBadge ? _unread : 0,
           onTap: _toggle,
         ),
@@ -271,8 +273,7 @@ class _BubbleBodyState extends State<_BubbleBody>
                 onPanUpdate: (d) {
                   setState(() {
                     final nx = (left + d.delta.dx)
-                        .clamp(widget.host.margin.left,
-                            w - size - widget.host.margin.right)
+                        .clamp(widget.host.margin.left, w - size - widget.host.margin.right)
                         .toDouble();
                     final ny = (top + d.delta.dy)
                         .clamp(
@@ -342,6 +343,7 @@ class _BubbleBodyState extends State<_BubbleBody>
                   theme: theme,
                   title: widget.host.title,
                   subtitle: widget.host.subtitle,
+                  avatar: widget.host.icons.avatar,
                   onClose: _close,
                 ),
                 Expanded(
@@ -360,6 +362,8 @@ class _BubbleBodyState extends State<_BubbleBody>
                     hintText: widget.host.inputHint,
                     onSend: widget.host.controller.send,
                     onStop: widget.host.controller.stop,
+                    sendIcon: widget.host.icons.send,
+                    stopIcon: widget.host.icons.stop,
                   ),
                 ),
               ],
@@ -447,19 +451,22 @@ class _PanelHeader extends StatelessWidget {
     required this.title,
     required this.subtitle,
     required this.onClose,
+    this.avatar,
   });
 
   final AiChatTheme theme;
   final String title;
   final String? subtitle;
   final VoidCallback onClose;
+  final Widget? avatar;
 
   @override
   Widget build(BuildContext context) {
+    final fg = theme.effectiveHeaderTextColor;
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
       decoration: BoxDecoration(
-        color: theme.accentColor,
+        color: theme.effectiveHeaderColor,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.08),
@@ -470,11 +477,15 @@ class _PanelHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          CircleAvatar(
-            radius: 16,
-            backgroundColor: theme.userTextColor.withValues(alpha: 0.2),
-            child: Icon(Icons.smart_toy_rounded,
-                size: 18, color: theme.userTextColor),
+          SizedBox(
+            width: 32,
+            height: 32,
+            child: avatar ??
+                CircleAvatar(
+                  radius: 16,
+                  backgroundColor: fg.withValues(alpha: 0.2),
+                  child: Icon(Icons.smart_toy_rounded, size: 18, color: fg),
+                ),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -485,7 +496,7 @@ class _PanelHeader extends StatelessWidget {
                 Text(
                   title,
                   style: TextStyle(
-                    color: theme.userTextColor,
+                    color: fg,
                     fontWeight: FontWeight.w600,
                     fontSize: 15,
                   ),
@@ -494,7 +505,7 @@ class _PanelHeader extends StatelessWidget {
                   Text(
                     subtitle!,
                     style: TextStyle(
-                      color: theme.userTextColor.withValues(alpha: 0.85),
+                      color: fg.withValues(alpha: 0.85),
                       fontSize: 11.5,
                     ),
                   ),
@@ -504,7 +515,7 @@ class _PanelHeader extends StatelessWidget {
           IconButton(
             onPressed: onClose,
             icon: const Icon(Icons.close_rounded),
-            color: theme.userTextColor,
+            color: fg,
             iconSize: 20,
             tooltip: 'Close',
           ),

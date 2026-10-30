@@ -20,5 +20,7 @@ Initial release.
   - `AiChatBubble` — a floating, Intercom-style launcher that expands into a
     keyboard-dodging panel, with an unread badge, configurable corner and an
     optional draggable launcher.
-- Theming via `AiChatTheme` (derived from the host `Theme` by default).
+- Theming via `AiChatTheme` (derived from the host `Theme` by default), with a
+  dedicated header colour, plus `AiChatIcons` to override the launcher logo,
+  the panel header avatar, and the send / stop glyphs.
 - Only one runtime dependency: `http`.

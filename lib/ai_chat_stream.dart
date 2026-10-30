@@ -29,6 +29,7 @@ export 'src/controller/chat_controller.dart';
 
 // UI
 export 'src/ui/chat_theme.dart';
+export 'src/ui/chat_icons.dart';
 export 'src/ui/ai_chat_view.dart';
 export 'src/ui/ai_chat_bubble.dart';
 export 'src/ui/message_bubble.dart' show MessageContentBuilder;

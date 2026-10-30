@@ -21,6 +21,8 @@ class AiChatTheme {
     required this.accentColor,
     required this.mutedColor,
     required this.errorColor,
+    this.headerColor,
+    this.headerTextColor,
     this.bubbleRadius = const BorderRadius.all(Radius.circular(18)),
     this.fontSize = 15,
     this.bubbleSpacing = 10,
@@ -56,6 +58,18 @@ class AiChatTheme {
 
   /// Colour for error text and the retry affordance.
   final Color errorColor;
+
+  /// Background of the [AiChatBubble] panel header. Defaults to [accentColor].
+  final Color? headerColor;
+
+  /// Text/icon colour in the panel header. Defaults to [userTextColor].
+  final Color? headerTextColor;
+
+  /// Effective header background ([headerColor] or [accentColor]).
+  Color get effectiveHeaderColor => headerColor ?? accentColor;
+
+  /// Effective header foreground ([headerTextColor] or [userTextColor]).
+  Color get effectiveHeaderTextColor => headerTextColor ?? userTextColor;
 
   /// Corner radius of message bubbles.
   final BorderRadius bubbleRadius;
@@ -111,6 +125,8 @@ class AiChatTheme {
     Color? accentColor,
     Color? mutedColor,
     Color? errorColor,
+    Color? headerColor,
+    Color? headerTextColor,
     BorderRadius? bubbleRadius,
     double? fontSize,
     double? bubbleSpacing,
@@ -127,6 +143,8 @@ class AiChatTheme {
       accentColor: accentColor ?? this.accentColor,
       mutedColor: mutedColor ?? this.mutedColor,
       errorColor: errorColor ?? this.errorColor,
+      headerColor: headerColor ?? this.headerColor,
+      headerTextColor: headerTextColor ?? this.headerTextColor,
       bubbleRadius: bubbleRadius ?? this.bubbleRadius,
       fontSize: fontSize ?? this.fontSize,
       bubbleSpacing: bubbleSpacing ?? this.bubbleSpacing,

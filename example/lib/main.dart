@@ -103,6 +103,15 @@ class _ExampleAppState extends State<ExampleApp> {
             title: 'AI Assistant',
             subtitle: 'Online — replies instantly',
             draggable: true,
+            icons: const AiChatIcons(
+              send: Icon(Icons.send_rounded),
+              stop: Icon(Icons.stop_rounded),
+              launcher: Icon(Icons.chat_outlined),
+              avatar: CircleAvatar(
+                backgroundColor: Colors.red,
+                child: Icon(Icons.smart_toy_sharp, color: Colors.yellow),
+              ),
+            ),
           ),
         ],
       ),

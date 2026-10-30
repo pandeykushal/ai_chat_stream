@@ -14,6 +14,8 @@ class ChatInputBar extends StatefulWidget {
     required this.onStop,
     this.enabled = true,
     this.hintText = 'Message…',
+    this.sendIcon,
+    this.stopIcon,
   });
 
   /// Resolved visual theme.
@@ -33,6 +35,12 @@ class ChatInputBar extends StatefulWidget {
 
   /// Placeholder shown when the field is empty.
   final String hintText;
+
+  /// Custom glyph for the send button (default: an upward arrow).
+  final Widget? sendIcon;
+
+  /// Custom glyph for the stop button (default: a stop square).
+  final Widget? stopIcon;
 
   @override
   State<ChatInputBar> createState() => _ChatInputBarState();
@@ -111,6 +119,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
               enabled: widget.isStreaming || (_hasText && widget.enabled),
               onSend: _send,
               onStop: widget.onStop,
+              sendIcon: widget.sendIcon,
+              stopIcon: widget.stopIcon,
             ),
           ],
         ),
@@ -126,6 +136,8 @@ class _SendStopButton extends StatelessWidget {
     required this.enabled,
     required this.onSend,
     required this.onStop,
+    this.sendIcon,
+    this.stopIcon,
   });
 
   final AiChatTheme theme;
@@ -133,11 +145,19 @@ class _SendStopButton extends StatelessWidget {
   final bool enabled;
   final VoidCallback onSend;
   final VoidCallback onStop;
+  final Widget? sendIcon;
+  final Widget? stopIcon;
 
   @override
   Widget build(BuildContext context) {
     final color =
         enabled ? theme.accentColor : theme.mutedColor.withValues(alpha: 0.4);
+    final glyph = isStreaming
+        ? (stopIcon ??
+            Icon(Icons.stop_rounded, color: theme.userTextColor, size: 22))
+        : (sendIcon ??
+            Icon(Icons.arrow_upward_rounded,
+                color: theme.userTextColor, size: 22));
     return Material(
       color: color,
       shape: const CircleBorder(),
@@ -147,11 +167,7 @@ class _SendStopButton extends StatelessWidget {
         child: SizedBox(
           width: 44,
           height: 44,
-          child: Icon(
-            isStreaming ? Icons.stop_rounded : Icons.arrow_upward_rounded,
-            color: theme.userTextColor,
-            size: 22,
-          ),
+          child: Center(child: glyph),
         ),
       ),
     );

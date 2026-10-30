@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../controller/chat_controller.dart';
+import 'chat_icons.dart';
 import 'chat_input_bar.dart';
 import 'chat_theme.dart';
 import 'message_bubble.dart';
@@ -26,6 +27,7 @@ class AiChatView extends StatelessWidget {
     super.key,
     required this.controller,
     this.theme,
+    this.icons = const AiChatIcons(),
     this.contentBuilder,
     this.emptyState,
     this.inputHint = 'Message…',
@@ -39,6 +41,9 @@ class AiChatView extends StatelessWidget {
 
   /// Visual theme. Defaults to one derived from the ambient [Theme].
   final AiChatTheme? theme;
+
+  /// Overridable glyphs (send / stop) for the input bar.
+  final AiChatIcons icons;
 
   /// Optional custom renderer for message content.
   final MessageContentBuilder? contentBuilder;
@@ -84,6 +89,8 @@ class AiChatView extends StatelessWidget {
               hintText: inputHint,
               onSend: controller.send,
               onStop: controller.stop,
+              sendIcon: icons.send,
+              stopIcon: icons.stop,
             ),
           ),
         ],
