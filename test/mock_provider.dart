@@ -1,7 +1,5 @@
 import 'package:ai_chat_stream/ai_chat_stream.dart';
 
-/// A tiny deterministic provider for tests — proof that the [LlmProvider]
-/// interface makes mocking trivial (no HTTP, no keys).
 class MockProvider extends LlmProvider {
   MockProvider({
     required this.tokens,
@@ -9,13 +7,10 @@ class MockProvider extends LlmProvider {
     this.throwAfter,
   });
 
-  /// The chunks to emit, in order.
   final List<String> tokens;
 
-  /// Delay before each chunk (keep [Duration.zero] for fast tests).
   final Duration perToken;
 
-  /// If set, throw a [NetworkException] once this many chunks have been emitted.
   final int? throwAfter;
 
   @override

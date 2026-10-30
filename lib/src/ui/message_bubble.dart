@@ -9,22 +9,13 @@ import 'chat_theme.dart';
 import 'markdown_text.dart';
 import 'typing_indicator.dart';
 
-/// Signature for overriding how a message's text content is rendered.
 typedef MessageContentBuilder = Widget Function(
   BuildContext context,
   Message message,
   AiChatTheme theme,
 );
 
-/// Renders a single [Message] as a chat bubble: role-based alignment and
-/// styling, an optional avatar, Markdown for assistant replies, a typing
-/// indicator / streaming cursor, an inline error state, an optional timestamp,
-/// and copy / regenerate actions.
-///
-/// Fully customisable via [theme] (colours, fonts, padding, radius), [icons]
-/// (action glyphs) and [builders] (whole-element replacement).
 class MessageBubble extends StatelessWidget {
-  /// Creates a bubble for [message].
   const MessageBubble({
     super.key,
     required this.message,
@@ -36,25 +27,18 @@ class MessageBubble extends StatelessWidget {
     this.showActions = true,
   });
 
-  /// The message to render.
   final Message message;
 
-  /// Resolved visual theme.
   final AiChatTheme theme;
 
-  /// Overridable action glyphs (copy / regenerate / retry).
   final AiChatIcons icons;
 
-  /// Optional whole-element builders (message / avatar / typing / timestamp).
   final AiChatBuilders builders;
 
-  /// Called when the user taps **Regenerate** / **Retry** on this message.
   final VoidCallback? onRegenerate;
 
-  /// Optional custom renderer for message content (e.g. a full Markdown pkg).
   final MessageContentBuilder? contentBuilder;
 
-  /// Whether to show the copy / regenerate row under assistant messages.
   final bool showActions;
 
   bool get _isUser => message.isUser;
@@ -126,7 +110,6 @@ class MessageBubble extends StatelessWidget {
   Widget _buildContent(BuildContext context) {
     final baseStyle = theme.messageTextStyle(_isUser);
 
-    // Empty + in-progress → typing indicator.
     if (message.content.isEmpty && message.status.isInProgress) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
@@ -261,7 +244,6 @@ class _ActionButton extends StatelessWidget {
   }
 }
 
-/// A thin, blinking text cursor shown at the end of a streaming reply.
 class _BlinkingCursor extends StatefulWidget {
   const _BlinkingCursor({required this.color});
   final Color color;

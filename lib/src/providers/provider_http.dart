@@ -5,16 +5,6 @@ import 'package:http/http.dart' as http;
 
 import '../exceptions/llm_exception.dart';
 
-/// Internal HTTP helpers shared by the built-in streaming providers.
-///
-/// Not exported from the package's public API.
-
-/// Opens a streaming POST request and returns the live [http.StreamedResponse].
-///
-/// Applies [timeout] to establishing the response (time-to-first-byte), maps
-/// transport failures to [NetworkException], and throws a typed
-/// [LlmException] for non-2xx responses. The caller owns [client] and must
-/// close it (typically in a `finally`).
 Future<http.StreamedResponse> openStreamingPost({
   required http.Client client,
   required Uri url,
@@ -40,8 +30,6 @@ Future<http.StreamedResponse> openStreamingPost({
       cause: e,
     );
   } catch (e) {
-    // SocketException, HandshakeException, and (on web) CORS failures all land
-    // here as opaque errors.
     throw NetworkException('Network error contacting $url.', cause: e);
   }
 
@@ -57,7 +45,6 @@ Future<http.StreamedResponse> openStreamingPost({
   return response;
 }
 
-/// Translates an HTTP status code + error body into a typed [LlmException].
 LlmException mapStatusToException(
   int statusCode,
   String body, {
@@ -69,7 +56,7 @@ LlmException mapStatusToException(
     case 401:
     case 403:
       return AuthException(
-        detail ?? 'Authentication failed — check your API key.',
+        detail ?? 'Authentication failed. Check your API key.',
         statusCode: statusCode,
       );
     case 429:
@@ -92,8 +79,6 @@ LlmException mapStatusToException(
   }
 }
 
-/// Best-effort extraction of a provider's error message from a JSON body.
-/// Falls back to a trimmed snippet of the raw body.
 String? _extractApiMessage(String body) {
   if (body.trim().isEmpty) return null;
   try {
@@ -107,7 +92,7 @@ String? _extractApiMessage(String body) {
       if (decoded['message'] is String) return decoded['message'] as String;
     }
   } catch (_) {
-    // Not JSON — fall through to the raw snippet.
+    // not json, fall back to the raw snippet below
   }
   final snippet = body.trim();
   return snippet.length > 300 ? '${snippet.substring(0, 300)}…' : snippet;

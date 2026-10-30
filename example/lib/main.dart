@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 void main() => runApp(const ExampleApp());
 
-/// Which backend the demo is pointed at.
 enum ProviderKind { demo, openai, claude, gemini }
 
 extension on ProviderKind {
@@ -32,8 +31,6 @@ extension on ProviderKind {
 const _brandTeal = Color(0xFF0EA5A5);
 const _brandDeep = Color(0xFF0F766E);
 
-/// Builds the chat theme. Call with a context UNDER MaterialApp so
-/// `AiChatTheme.fromTheme(Theme.of(context))` sees the app's light/dark theme.
 AiChatTheme buildChatTheme(BuildContext context, bool customized) {
   final base = AiChatTheme.fromTheme(Theme.of(context));
   if (!customized) return base;
@@ -77,7 +74,6 @@ class ExampleApp extends StatefulWidget {
 class _ExampleAppState extends State<ExampleApp> {
   ThemeMode _themeMode = ThemeMode.light;
 
-  /// Toggles between the package defaults and the fully-customized look.
   bool _customized = true;
 
   ProviderKind _kind = ProviderKind.demo;
@@ -119,17 +115,6 @@ class _ExampleAppState extends State<ExampleApp> {
     super.dispose();
   }
 
-  // ---------------------------------------------------------------------------
-  // CUSTOMIZATION SHOWCASE
-  // Every knob below is optional. Remove `theme:`, `icons:` and `builders:`
-  // from the widgets and you get the stock look.
-  // ---------------------------------------------------------------------------
-
-  /// 1) THEME — colours, fonts, per-role bubble shape/padding, input, sizes,
-  ///    timestamps, bubble width… (defined as a top-level function below so it
-  ///    is always built from a context *under* MaterialApp).
-
-  /// 2) ICONS — swap any glyph/logo for your own widget.
   AiChatIcons get _chatIcons => _customized
       ? const AiChatIcons(
           launcher: Icon(Icons.support_agent_rounded, color: Colors.white),
@@ -147,10 +132,6 @@ class _ExampleAppState extends State<ExampleApp> {
         )
       : const AiChatIcons();
 
-  /// 3) BUILDERS — replace whole elements. Shown: per-message avatar, a custom
-  ///    typing indicator, and a custom timestamp. The remaining slots
-  ///    (message, userAvatar, header, launcher, input, sendButton,
-  ///    scrollToBottom) work the same way — see the README.
   AiChatBuilders get _chatBuilders => _customized
       ? AiChatBuilders(
           assistantAvatar: (context, message, theme) => const CircleAvatar(
@@ -208,14 +189,13 @@ class _ExampleAppState extends State<ExampleApp> {
         brightness: Brightness.dark,
         useMaterial3: true,
       ),
-      // Mount the floating bubble ABOVE all routes so it overlays every screen.
       builder: (context, child) => Stack(
         children: [
           if (child != null) child,
           AiChatBubble(
             controller: _chat,
             title: 'AI Assistant',
-            subtitle: 'Online — replies instantly',
+            subtitle: 'Online, replies instantly',
             draggable: true,
             theme: buildChatTheme(context, _customized),
             icons: _chatIcons,

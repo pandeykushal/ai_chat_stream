@@ -9,29 +9,12 @@ import 'llm_provider.dart';
 import 'provider_http.dart';
 import 'sse_parser.dart';
 
-/// Streams messages from Anthropic's Claude (Messages API).
-///
-/// ### Endpoint
-/// Requests go to `<prefix>/messages`, where `<prefix>` is [LlmConfig.baseUrl]
-/// when set, otherwise `https://api.anthropic.com/v1`.
-///
-/// ### Notes
-///  * Anthropic **requires** `max_tokens`; if [LlmConfig.maxTokens] is omitted,
-///    [defaultMaxTokens] is used.
-///  * `system` is a top-level field, so a system prompt (from
-///    [LlmConfig.systemPrompt] or a leading system message) is lifted out of the
-///    message list automatically.
-///  * The `anthropic-dangerous-direct-browser-access` header is set so Flutter
-///    **web** can call the API directly during development. In production,
-///    prefer a proxy ([LlmConfig.baseUrl]) so your key never ships in the app.
 class ClaudeProvider extends LlmProvider {
-  /// Creates a Claude provider.
   const ClaudeProvider();
 
   static const String _defaultPrefix = 'https://api.anthropic.com/v1';
   static const String _anthropicVersion = '2023-06-01';
 
-  /// Used when [LlmConfig.maxTokens] is null (Anthropic requires the field).
   static const int defaultMaxTokens = 1024;
 
   @override
@@ -67,7 +50,6 @@ class ClaudeProvider extends LlmProvider {
       ...config.headers,
     };
 
-    // Lift system instructions out of the message list.
     final systemParts = <String>[
       if (config.systemPrompt != null && config.systemPrompt!.isNotEmpty)
         config.systemPrompt!,

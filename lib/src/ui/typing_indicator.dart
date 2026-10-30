@@ -1,14 +1,10 @@
 import 'package:flutter/material.dart';
 
-/// Three softly-pulsing dots shown before the first token arrives.
 class TypingIndicator extends StatefulWidget {
-  /// Creates a typing indicator in [color].
   const TypingIndicator({super.key, required this.color, this.dotSize = 7});
 
-  /// Dot colour.
   final Color color;
 
-  /// Diameter of each dot.
   final double dotSize;
 
   @override

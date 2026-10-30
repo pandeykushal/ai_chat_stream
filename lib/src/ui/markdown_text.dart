@@ -1,19 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-/// A dependency-free Markdown renderer tuned for LLM chat output.
-///
-/// Supports the subset models actually emit: headings, **bold**, *italic*,
-/// `inline code`, fenced ```code blocks``` (with a copy button, a language
-/// label and their own horizontal scroll), ordered/unordered lists,
-/// blockquotes and horizontal rules. Links are styled but not tappable — pass a
-/// custom `contentBuilder` to [AiChatView](AiChatView) if you need full
-/// CommonMark (e.g. via `flutter_markdown`).
-///
-/// It is intentionally lightweight so the package's only runtime dependency
-/// stays `http`.
 class AiChatMarkdown extends StatelessWidget {
-  /// Creates a Markdown view of [data].
   const AiChatMarkdown({
     super.key,
     required this.data,
@@ -25,25 +13,18 @@ class AiChatMarkdown extends StatelessWidget {
     this.codeRadius = const BorderRadius.all(Radius.circular(10)),
   });
 
-  /// The raw Markdown text.
   final String data;
 
-  /// Base text style for prose.
   final TextStyle style;
 
-  /// Background of code blocks and inline code.
   final Color codeBackground;
 
-  /// Text colour inside code.
   final Color codeTextColor;
 
-  /// Colour for (non-tappable) links.
   final Color linkColor;
 
-  /// Font family for code (inline and blocks).
   final String codeFontFamily;
 
-  /// Corner radius of fenced code blocks.
   final BorderRadius codeRadius;
 
   @override
@@ -135,8 +116,6 @@ class AiChatMarkdown extends StatelessWidget {
     }
   }
 
-  // --- block parsing -------------------------------------------------------
-
   List<_Block> _parseBlocks(String src) {
     final lines = src.split('\n');
     final blocks = <_Block>[];
@@ -221,8 +200,6 @@ class AiChatMarkdown extends StatelessWidget {
     return blocks;
   }
 
-  // --- inline span parsing -------------------------------------------------
-
   List<InlineSpan> _inlineSpans(String text, TextStyle base) {
     final spans = <InlineSpan>[];
     final plain = StringBuffer();
@@ -236,7 +213,6 @@ class AiChatMarkdown extends StatelessWidget {
 
     var i = 0;
     while (i < text.length) {
-      // Inline code: `code`
       if (text[i] == '`') {
         final close = text.indexOf('`', i + 1);
         if (close > i) {
@@ -254,7 +230,6 @@ class AiChatMarkdown extends StatelessWidget {
         }
       }
 
-      // Bold: **text** or __text__
       final bold = _matchDelimited(text, i, '**') ?? _matchDelimited(text, i, '__');
       if (bold != null) {
         flushPlain();
@@ -263,7 +238,6 @@ class AiChatMarkdown extends StatelessWidget {
         continue;
       }
 
-      // Italic: *text* or _text_
       final italic = _matchDelimited(text, i, '*') ?? _matchDelimited(text, i, '_');
       if (italic != null) {
         flushPlain();
@@ -272,7 +246,6 @@ class AiChatMarkdown extends StatelessWidget {
         continue;
       }
 
-      // Link: [text](url)
       if (text[i] == '[') {
         final match = RegExp(r'^\[([^\]]+)\]\(([^)]+)\)').firstMatch(text.substring(i));
         if (match != null) {
@@ -297,11 +270,8 @@ class AiChatMarkdown extends StatelessWidget {
     return spans;
   }
 
-  /// Matches a `delim…delim` run starting at [start]; returns the inner text
-  /// and the index just past the closing delimiter, or `null`.
   _Delimited? _matchDelimited(String text, int start, String delim) {
     if (!text.startsWith(delim, start)) return null;
-    // For single-char delimiters, don't confuse with the double form.
     if (delim.length == 1 && text.startsWith(delim * 2, start)) return null;
     final contentStart = start + delim.length;
     final close = text.indexOf(delim, contentStart);
@@ -330,7 +300,6 @@ class _Block {
   final String? language;
 }
 
-/// A fenced code block: dark panel, language label, copy button, h-scroll.
 class _CodeBlock extends StatelessWidget {
   const _CodeBlock({
     required this.code,

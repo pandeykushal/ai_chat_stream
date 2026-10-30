@@ -3,15 +3,7 @@ import 'package:flutter/material.dart';
 import 'chat_builders.dart';
 import 'chat_theme.dart';
 
-/// The bottom input row: a multi-line text field and a button that toggles
-/// between **Send** and **Stop** depending on streaming state.
-///
-/// Styled entirely from [AiChatTheme] (fill, radius, text/hint styles, padding,
-/// button colour & size). Pass [sendIcon] / [stopIcon] to swap glyphs, or
-/// [sendButtonBuilder] to replace the button. To replace the whole bar, use
-/// `AiChatBuilders.input` on `AiChatView` / `AiChatBubble`.
 class ChatInputBar extends StatefulWidget {
-  /// Creates an input bar.
   const ChatInputBar({
     super.key,
     required this.theme,
@@ -25,31 +17,22 @@ class ChatInputBar extends StatefulWidget {
     this.sendButtonBuilder,
   });
 
-  /// Resolved visual theme.
   final AiChatTheme theme;
 
-  /// Whether a response is currently streaming (button shows **Stop**).
   final bool isStreaming;
 
-  /// Called with the trimmed text when the user sends a message.
   final ValueChanged<String> onSend;
 
-  /// Called when the user taps **Stop** mid-stream.
   final VoidCallback onStop;
 
-  /// Whether the field accepts input.
   final bool enabled;
 
-  /// Placeholder shown when the field is empty.
   final String hintText;
 
-  /// Custom glyph for the send button (default: an upward arrow).
   final Widget? sendIcon;
 
-  /// Custom glyph for the stop button (default: a stop square).
   final Widget? stopIcon;
 
-  /// Optional builder to replace the send/stop button entirely.
   final AiSendButtonBuilder? sendButtonBuilder;
 
   @override

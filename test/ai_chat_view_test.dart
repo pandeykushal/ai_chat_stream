@@ -18,11 +18,9 @@ void main() {
     await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
     await tester.pump(); // process send + add placeholder
 
-    // The user's message is recorded and a reply bubble is created.
     expect(controller.messages.first.content, 'hello');
     expect(controller.messages.length, 2);
 
-    // Let the (zero-delay) stream drain, then confirm it completed.
     await tester.pump(const Duration(milliseconds: 50));
     await tester.pump(const Duration(milliseconds: 50));
     expect(controller.messages.last.role, ChatRole.assistant);
@@ -50,7 +48,6 @@ void main() {
       ),
     );
 
-    // Launcher icon is present; panel title is not yet shown.
     expect(find.byIcon(Icons.chat_bubble_rounded), findsOneWidget);
     expect(find.text('Helper'), findsNothing);
 
@@ -58,7 +55,6 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 300));
 
-    // Panel header is now visible.
     expect(find.text('Helper'), findsOneWidget);
 
     controller.dispose();

@@ -1,5 +1,1 @@
 include: package:flutter_lints/flutter.yaml
-
-# Add project-specific rules here as the package grows. The defaults from
-# flutter_lints already cover the common correctness and style checks that
-# pub.dev's static-analysis score rewards.

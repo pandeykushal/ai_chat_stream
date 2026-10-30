@@ -8,28 +8,9 @@ import 'chat_theme.dart';
 import 'message_bubble.dart';
 import 'message_list.dart';
 
-/// A floating, Intercom-style chat launcher that overlays any screen and
-/// expands into a chat panel.
-///
-/// Mount it **above your routes** so it survives navigation — the easiest way
-/// is `MaterialApp.builder`:
-///
-/// ```dart
-/// MaterialApp(
-///   builder: (context, child) => Stack(
-///     children: [
-///       if (child != null) child,
-///       AiChatBubble(controller: controller),
-///     ],
-///   ),
-/// );
-/// ```
-///
-/// When collapsed, only the launcher absorbs touches — the rest of your app
-/// stays interactive. It shares the same [ChatController] and providers as
-/// [AiChatView](AiChatView), so a conversation can continue across both.
+/// Floating launcher that opens into a chat panel over any screen.
+/// Mount it above your routes, e.g. in MaterialApp.builder.
 class AiChatBubble extends StatefulWidget {
-  /// Creates a floating chat bubble.
   const AiChatBubble({
     super.key,
     required this.controller,
@@ -51,56 +32,38 @@ class AiChatBubble extends StatefulWidget {
     this.onClose,
   });
 
-  /// The chat controller driving the panel.
   final ChatController controller;
 
-  /// Visual theme. Defaults to one derived from the ambient [Theme].
   final AiChatTheme? theme;
 
-  /// Overridable logos / glyphs: launcher logo, header avatar, send & stop
-  /// icons, close, copy, etc. Leave slots null to keep the defaults.
   final AiChatIcons icons;
 
-  /// Whole-element builders (header, launcher, message, avatar, input, …).
   final AiChatBuilders builders;
 
-  /// Optional custom renderer for message content.
   final MessageContentBuilder? contentBuilder;
 
-  /// Which corner the launcher sits in (and the panel grows from).
   final Alignment alignment;
 
-  /// Distance from the screen edges.
   final EdgeInsets margin;
 
-  /// Diameter of the launcher.
   final double bubbleSize;
 
-  /// Desired panel size; clamped to fit the screen with [margin].
   final Size panelSize;
 
-  /// Title shown in the panel header.
   final String title;
 
-  /// Optional subtitle (e.g. "Online — replies instantly").
   final String? subtitle;
 
-  /// Placeholder for the input field.
   final String inputHint;
 
-  /// Whether the launcher can be dragged around the screen.
   final bool draggable;
 
-  /// Whether to show an unread badge when replies arrive while collapsed.
   final bool showUnreadBadge;
 
-  /// Shown in the panel when the conversation is empty.
   final Widget? emptyState;
 
-  /// Called when the panel opens.
   final VoidCallback? onOpen;
 
-  /// Called when the panel closes.
   final VoidCallback? onClose;
 
   @override
@@ -114,26 +77,20 @@ class _AiChatBubbleState extends State<AiChatBubble> {
   @override
   void didUpdateWidget(covariant AiChatBubble oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // Rebuild the hosted body with the latest configuration.
     _entry.markNeedsBuild();
   }
 
   @override
   Widget build(BuildContext context) {
-    // A self-contained Overlay lets the bubble live anywhere it is mounted —
-    // even as a sibling of the app's Navigator (e.g. in MaterialApp.builder) —
-    // while still giving the panel an Overlay ancestor (required by Tooltip and
-    // other floating widgets) and tight, bounded constraints.
+    // Own Overlay so tooltips etc. work even when we're mounted next to the
+    // app's Navigator instead of under it.
     return Overlay(initialEntries: [_entry]);
   }
 }
 
-/// The launcher + expandable panel, hosted inside [_AiChatBubbleState]'s
-/// Overlay so it has a valid Overlay ancestor wherever the bubble is placed.
 class _BubbleBody extends StatefulWidget {
   const _BubbleBody({required this.host});
 
-  /// The public [AiChatBubble] carrying all configuration.
   final AiChatBubble host;
 
   @override

@@ -1,23 +1,21 @@
-# ai_chat_stream example
+# Example
 
-Shows both shells of the package in one app:
+A single app showing both UIs:
 
-- a full-screen **`AiChatView`** on the home screen, and
-- a floating, draggable **`AiChatBubble`** mounted over every route via
-  `MaterialApp.builder`.
+- a full-screen `AiChatView` on the home screen, and
+- a floating `AiChatBubble` mounted over every route via `MaterialApp.builder`.
 
-Both share a single `ChatController`, so a conversation continues seamlessly
-between them.
+They share one `ChatController`. The palette icon in the app bar toggles a
+custom theme/icons/builders on and off.
 
-## Run it
+## Run
 
 ```bash
 cd example
-flutter create .       # one-time: generates android/ios/web/… (won't touch lib/)
+flutter create .      # one-time: generates android/ios/web (leaves lib/ alone)
 flutter pub get
-flutter run            # or: flutter run -d chrome / -d macos / an emulator
+flutter run           # or: flutter run -d chrome
 ```
 
-It launches on the **Demo (no key)** provider, so streaming works instantly
-with no API key. Open **Settings** (the tune icon in the app bar) to switch to
-OpenAI, Claude or Gemini, enter a key (or a proxy URL), and set a system prompt.
+It starts on the demo provider (no key needed). Open Settings (the tune icon)
+to switch to OpenAI/Claude/Gemini and enter a key or a proxy URL.

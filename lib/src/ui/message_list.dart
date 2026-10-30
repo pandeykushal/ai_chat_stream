@@ -6,13 +6,7 @@ import 'chat_icons.dart';
 import 'chat_theme.dart';
 import 'message_bubble.dart';
 
-/// The scrolling list of message bubbles — the shared engine behind both
-/// [AiChatView](AiChatView) and [AiChatBubble](AiChatBubble).
-///
-/// Handles sticky auto-scroll (follows the stream while you're at the bottom,
-/// but leaves you alone when you've scrolled up) and a scroll-to-bottom button.
 class ChatMessageList extends StatefulWidget {
-  /// Creates a message list bound to [controller].
   const ChatMessageList({
     super.key,
     required this.controller,
@@ -25,28 +19,20 @@ class ChatMessageList extends StatefulWidget {
     this.showActions = true,
   });
 
-  /// The chat controller to render.
   final ChatController controller;
 
-  /// Resolved visual theme.
   final AiChatTheme theme;
 
-  /// Overridable glyphs passed down to bubbles and the scroll button.
   final AiChatIcons icons;
 
-  /// Whole-element builders passed down to bubbles and the scroll button.
   final AiChatBuilders builders;
 
-  /// Optional custom content renderer passed to each bubble.
   final MessageContentBuilder? contentBuilder;
 
-  /// Padding around the list.
   final EdgeInsets padding;
 
-  /// Shown (centered) when there are no messages yet.
   final Widget? emptyState;
 
-  /// Whether bubbles show copy / regenerate actions.
   final bool showActions;
 
   @override

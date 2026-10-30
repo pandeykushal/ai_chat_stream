@@ -9,15 +9,7 @@ import 'llm_provider.dart';
 import 'provider_http.dart';
 import 'sse_parser.dart';
 
-/// Streams chat completions from the OpenAI API (or any OpenAI-compatible
-/// endpoint — Azure OpenAI, Groq, Together, OpenRouter, a local server, …).
-///
-/// ### Endpoint
-/// Requests go to `<prefix>/chat/completions`, where `<prefix>` is
-/// [LlmConfig.baseUrl] when set, otherwise `https://api.openai.com/v1`.
-/// Point [LlmConfig.baseUrl] at your proxy to keep keys off the device.
 class OpenAIProvider extends LlmProvider {
-  /// Creates an OpenAI provider.
   const OpenAIProvider();
 
   static const String _defaultPrefix = 'https://api.openai.com/v1';
@@ -90,7 +82,6 @@ class OpenAIProvider extends LlmProvider {
     }
   }
 
-  /// Pulls `choices[0].delta.content` out of one SSE data payload.
   String? _extractDelta(String data) {
     try {
       final json = jsonDecode(data);
@@ -102,7 +93,7 @@ class OpenAIProvider extends LlmProvider {
         return delta['content'] as String;
       }
     } catch (_) {
-      // Ignore keep-alive fragments or malformed chunks.
+      // skip keep-alive / malformed chunks
     }
     return null;
   }

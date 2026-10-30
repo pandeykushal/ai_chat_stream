@@ -9,23 +9,9 @@ import '../models/message.dart';
 import '../models/message_status.dart';
 import '../providers/llm_provider.dart';
 
-/// The headless brain of a chat: owns the message list and streaming state,
-/// and appends partial tokens as they arrive.
-///
-/// It is a [ChangeNotifier], so it works with `ListenableBuilder`,
-/// `AnimatedBuilder`, `provider`, or any state-management approach — and with
-/// **no UI at all**. [AiChatView](AiChatView) and [AiChatBubble](AiChatBubble)
-/// are thin shells over this class.
-///
-/// ```dart
-/// final controller = ChatController(
-///   provider: const OpenAIProvider(),
-///   config: const LlmConfig(model: 'gpt-4o', apiKey: '...'),
-/// );
-/// await controller.send('Hello!');
-/// ```
+/// Holds the message list and streaming state. A ChangeNotifier, so it works
+/// with the built-in widgets or on its own.
 class ChatController extends ChangeNotifier {
-  /// Creates a controller bound to [provider] and [config].
   ChatController({
     required LlmProvider provider,
     required LlmConfig config,
@@ -43,6 +29,8 @@ class ChatController extends ChangeNotifier {
   Completer<void>? _completer;
   bool _disposed = false;
 
+  // Resolves the future from send(), including when we stop or dispose
+  // mid-stream (onDone won't fire then).
   void _finish() {
     if (_completer != null && !_completer!.isCompleted) {
       _completer!.complete();
@@ -50,30 +38,24 @@ class ChatController extends ChangeNotifier {
     _completer = null;
   }
 
-  /// The active provider. Assigning a new one affects the *next* request.
   LlmProvider get provider => _provider;
   set provider(LlmProvider value) {
     _provider = value;
     _safeNotify();
   }
 
-  /// The active configuration. Assigning a new one affects the *next* request.
   LlmConfig get config => _config;
   set config(LlmConfig value) {
     _config = value;
     _safeNotify();
   }
 
-  /// The conversation, oldest first. Unmodifiable — mutate via the methods.
   List<Message> get messages => List<Message>.unmodifiable(_messages);
 
-  /// `true` while a response is streaming (or the request is in flight).
   bool get isStreaming => _subscription != null;
 
-  /// Convenience alias for [isStreaming].
   bool get isBusy => isStreaming;
 
-  /// The last user message's text, or `null` if none yet.
   String? get lastUserText {
     for (final m in _messages.reversed) {
       if (m.isUser) return m.content;
@@ -81,9 +63,6 @@ class ChatController extends ChangeNotifier {
     return null;
   }
 
-  /// Sends [text] as a user message and streams the assistant's reply.
-  ///
-  /// No-ops on empty input or while another response is streaming.
   Future<void> send(String text) async {
     final trimmed = text.trim();
     if (trimmed.isEmpty || isBusy || _disposed) return;
@@ -92,7 +71,6 @@ class ChatController extends ChangeNotifier {
     await _run();
   }
 
-  /// Aborts the in-flight response cleanly, keeping any partial text.
   void stop() {
     if (_subscription == null) return;
     _subscription!.cancel();
@@ -113,9 +91,6 @@ class ChatController extends ChangeNotifier {
     _finish();
   }
 
-  /// Re-generates the reply to the most recent user message.
-  ///
-  /// Drops the last assistant message (if any) and streams a fresh one.
   Future<void> regenerate() async {
     if (isBusy || _disposed) return;
     if (_messages.isEmpty) return;
@@ -127,23 +102,18 @@ class ChatController extends ChangeNotifier {
     await _run();
   }
 
-  /// Clears the conversation (stopping any active stream first).
   void clear() {
     if (isStreaming) stop();
     _messages.clear();
     _safeNotify();
   }
 
-  /// Appends a pre-built [message] (e.g. to seed a greeting). Not for streaming.
   void addMessage(Message message) {
     _messages.add(message);
     _safeNotify();
   }
 
-  // --- internals -----------------------------------------------------------
-
   Future<void> _run() async {
-    // Snapshot the history BEFORE adding the assistant placeholder.
     final history = List<Message>.of(_messages);
 
     final placeholder = Message(role: ChatRole.assistant, content: '', status: MessageStatus.sending);

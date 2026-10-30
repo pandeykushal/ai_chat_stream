@@ -9,20 +9,7 @@ import 'llm_provider.dart';
 import 'provider_http.dart';
 import 'sse_parser.dart';
 
-/// Streams content from Google's Gemini (Generative Language API).
-///
-/// ### Endpoint
-/// Requests go to
-/// `<prefix>/models/<model>:streamGenerateContent?alt=sse`, where `<prefix>` is
-/// [LlmConfig.baseUrl] when set, otherwise
-/// `https://generativelanguage.googleapis.com/v1beta`. The API key is sent as
-/// the `key` query parameter; when using a proxy ([LlmConfig.baseUrl]) that
-/// injects the key, omit [LlmConfig.apiKey].
-///
-/// Roles are mapped to Gemini's vocabulary: `user` stays `user`, `assistant`
-/// becomes `model`, and a system prompt becomes `systemInstruction`.
 class GeminiProvider extends LlmProvider {
-  /// Creates a Gemini provider.
   const GeminiProvider();
 
   static const String _defaultPrefix =
@@ -116,7 +103,6 @@ class GeminiProvider extends LlmProvider {
     }
   }
 
-  /// Concatenates every `candidates[0].content.parts[*].text` in one payload.
   String? _extractText(String data) {
     try {
       final json = jsonDecode(data);
