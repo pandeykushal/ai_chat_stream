@@ -69,8 +69,7 @@ class _ChatMessageListState extends State<ChatMessageList> {
 
   void _onScroll() {
     if (!_scroll.hasClients) return;
-    final atBottom =
-        _scroll.position.maxScrollExtent - _scroll.offset < 80;
+    final atBottom = _scroll.position.maxScrollExtent - _scroll.offset < 80;
     if (atBottom != _atBottom) setState(() => _atBottom = atBottom);
   }
 
@@ -122,9 +121,8 @@ class _ChatMessageListState extends State<ChatMessageList> {
                   builders: widget.builders,
                   contentBuilder: widget.contentBuilder,
                   showActions: widget.showActions,
-                  onRegenerate: message.isAssistant
-                      ? widget.controller.regenerate
-                      : null,
+                  onRegenerate:
+                      message.isAssistant ? widget.controller.regenerate : null,
                 );
               },
             ),

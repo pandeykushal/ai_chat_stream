@@ -116,7 +116,8 @@ class ChatController extends ChangeNotifier {
   Future<void> _run() async {
     final history = List<Message>.of(_messages);
 
-    final placeholder = Message(role: ChatRole.assistant, content: '', status: MessageStatus.sending);
+    final placeholder = Message(
+        role: ChatRole.assistant, content: '', status: MessageStatus.sending);
     _streamingId = placeholder.id;
     _messages.add(placeholder);
     _safeNotify();
