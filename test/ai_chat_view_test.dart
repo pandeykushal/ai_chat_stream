@@ -15,6 +15,7 @@ void main() {
     );
 
     await tester.enterText(find.byType(TextField), 'hello');
+    await tester.pump(); // rebuild so the send button enables
     await tester.tap(find.byIcon(Icons.arrow_upward_rounded));
     await tester.pump(); // process send + add placeholder
 

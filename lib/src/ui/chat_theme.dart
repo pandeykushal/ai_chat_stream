@@ -149,8 +149,7 @@ class AiChatTheme {
   Color get effectiveInputFillColor =>
       inputFillColor ?? assistantBubbleColor.withValues(alpha: 0.6);
 
-  Color get effectiveTypingIndicatorColor =>
-      typingIndicatorColor ?? mutedColor;
+  Color get effectiveTypingIndicatorColor => typingIndicatorColor ?? mutedColor;
 
   String get effectiveCodeFontFamily => codeFontFamily ?? 'monospace';
 

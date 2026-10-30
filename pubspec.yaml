@@ -3,7 +3,7 @@ description: >-
   Streaming LLM chat for Flutter: one interface for OpenAI, Claude and Gemini,
   a headless controller, and two UIs: a full-screen view and a floating
   chat bubble.
-version: 0.1.0
+version: 0.1.2
 repository: https://github.com/pandeykushal/ai_chat_stream
 issue_tracker: https://github.com/pandeykushal/ai_chat_stream/issues
 homepage: https://github.com/pandeykushal

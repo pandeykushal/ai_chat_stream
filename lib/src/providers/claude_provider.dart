@@ -40,9 +40,8 @@ class ClaudeProvider extends LlmProvider {
       '',
     );
     final url = Uri.parse('$prefix/messages').replace(
-      queryParameters: config.queryParameters.isEmpty
-          ? null
-          : config.queryParameters,
+      queryParameters:
+          config.queryParameters.isEmpty ? null : config.queryParameters,
     );
 
     final headers = <String, String>{

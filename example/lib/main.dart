@@ -349,9 +349,8 @@ class HomeScreen extends StatelessWidget {
           IconButton(
             tooltip: customized ? 'Custom UI: on' : 'Custom UI: off',
             onPressed: onToggleCustom,
-            icon: Icon(customized
-                ? Icons.palette_rounded
-                : Icons.palette_outlined),
+            icon: Icon(
+                customized ? Icons.palette_rounded : Icons.palette_outlined),
           ),
           IconButton(
             tooltip: 'Toggle theme',
