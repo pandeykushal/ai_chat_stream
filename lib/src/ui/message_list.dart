@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../controller/chat_controller.dart';
+import 'chat_builders.dart';
+import 'chat_icons.dart';
 import 'chat_theme.dart';
 import 'message_bubble.dart';
 
@@ -15,6 +17,8 @@ class ChatMessageList extends StatefulWidget {
     super.key,
     required this.controller,
     required this.theme,
+    this.icons = const AiChatIcons(),
+    this.builders = const AiChatBuilders(),
     this.contentBuilder,
     this.padding = const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
     this.emptyState,
@@ -26,6 +30,12 @@ class ChatMessageList extends StatefulWidget {
 
   /// Resolved visual theme.
   final AiChatTheme theme;
+
+  /// Overridable glyphs passed down to bubbles and the scroll button.
+  final AiChatIcons icons;
+
+  /// Whole-element builders passed down to bubbles and the scroll button.
+  final AiChatBuilders builders;
 
   /// Optional custom content renderer passed to each bubble.
   final MessageContentBuilder? contentBuilder;
@@ -122,6 +132,8 @@ class _ChatMessageListState extends State<ChatMessageList> {
                   key: ValueKey(message.id),
                   message: message,
                   theme: widget.theme,
+                  icons: widget.icons,
+                  builders: widget.builders,
                   contentBuilder: widget.contentBuilder,
                   showActions: widget.showActions,
                   onRegenerate: message.isAssistant
@@ -134,10 +146,16 @@ class _ChatMessageListState extends State<ChatMessageList> {
               Positioned(
                 right: 12,
                 bottom: 12,
-                child: _ScrollToBottomButton(
-                  theme: widget.theme,
-                  onTap: _animateToBottom,
-                ),
+                child: widget.builders.scrollToBottom?.call(
+                      context,
+                      widget.theme,
+                      _animateToBottom,
+                    ) ??
+                    _ScrollToBottomButton(
+                      theme: widget.theme,
+                      glyph: widget.icons.scrollToBottom,
+                      onTap: _animateToBottom,
+                    ),
               ),
           ],
         );
@@ -147,10 +165,15 @@ class _ChatMessageListState extends State<ChatMessageList> {
 }
 
 class _ScrollToBottomButton extends StatelessWidget {
-  const _ScrollToBottomButton({required this.theme, required this.onTap});
+  const _ScrollToBottomButton({
+    required this.theme,
+    required this.onTap,
+    this.glyph,
+  });
 
   final AiChatTheme theme;
   final VoidCallback onTap;
+  final Widget? glyph;
 
   @override
   Widget build(BuildContext context) {
@@ -164,10 +187,13 @@ class _ScrollToBottomButton extends StatelessWidget {
         child: SizedBox(
           width: 36,
           height: 36,
-          child: Icon(
-            Icons.keyboard_arrow_down_rounded,
-            color: theme.assistantTextColor,
-            size: 22,
+          child: Center(
+            child: glyph ??
+                Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: theme.assistantTextColor,
+                  size: 22,
+                ),
           ),
         ),
       ),

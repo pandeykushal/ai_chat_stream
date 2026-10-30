@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../controller/chat_controller.dart';
+import 'chat_builders.dart';
 import 'chat_icons.dart';
 import 'chat_input_bar.dart';
 import 'chat_theme.dart';
@@ -28,6 +29,7 @@ class AiChatView extends StatelessWidget {
     required this.controller,
     this.theme,
     this.icons = const AiChatIcons(),
+    this.builders = const AiChatBuilders(),
     this.contentBuilder,
     this.emptyState,
     this.inputHint = 'Message…',
@@ -42,8 +44,11 @@ class AiChatView extends StatelessWidget {
   /// Visual theme. Defaults to one derived from the ambient [Theme].
   final AiChatTheme? theme;
 
-  /// Overridable glyphs (send / stop) for the input bar.
+  /// Overridable glyphs (send / stop / copy / regenerate / scroll-to-bottom).
   final AiChatIcons icons;
+
+  /// Whole-element builders (message / avatar / typing / input / send button).
+  final AiChatBuilders builders;
 
   /// Optional custom renderer for message content.
   final MessageContentBuilder? contentBuilder;
@@ -74,6 +79,8 @@ class AiChatView extends StatelessWidget {
             child: ChatMessageList(
               controller: controller,
               theme: resolved,
+              icons: icons,
+              builders: builders,
               contentBuilder: contentBuilder,
               padding: listPadding,
               emptyState: emptyState,
@@ -82,16 +89,32 @@ class AiChatView extends StatelessWidget {
           ),
           ListenableBuilder(
             listenable: controller,
-            builder: (context, _) => ChatInputBar(
-              theme: resolved,
-              isStreaming: controller.isStreaming,
-              enabled: enabled,
-              hintText: inputHint,
-              onSend: controller.send,
-              onStop: controller.stop,
-              sendIcon: icons.send,
-              stopIcon: icons.stop,
-            ),
+            builder: (context, _) {
+              if (builders.input != null) {
+                return builders.input!(
+                  context,
+                  AiInputState(
+                    theme: resolved,
+                    isStreaming: controller.isStreaming,
+                    enabled: enabled,
+                    hintText: inputHint,
+                    onSend: controller.send,
+                    onStop: controller.stop,
+                  ),
+                );
+              }
+              return ChatInputBar(
+                theme: resolved,
+                isStreaming: controller.isStreaming,
+                enabled: enabled,
+                hintText: inputHint,
+                onSend: controller.send,
+                onStop: controller.stop,
+                sendIcon: icons.send,
+                stopIcon: icons.stop,
+                sendButtonBuilder: builders.sendButton,
+              );
+            },
           ),
         ],
       ),

@@ -29,6 +29,44 @@ extension on ProviderKind {
       };
 }
 
+const _brandTeal = Color(0xFF0EA5A5);
+const _brandDeep = Color(0xFF0F766E);
+
+/// Builds the chat theme. Call with a context UNDER MaterialApp so
+/// `AiChatTheme.fromTheme(Theme.of(context))` sees the app's light/dark theme.
+AiChatTheme buildChatTheme(BuildContext context, bool customized) {
+  final base = AiChatTheme.fromTheme(Theme.of(context));
+  if (!customized) return base;
+  return base.copyWith(
+    accentColor: _brandTeal,
+    userBubbleColor: _brandTeal,
+    linkColor: _brandTeal,
+    headerColor: _brandDeep,
+    headerTextColor: Colors.white,
+    launcherColor: _brandTeal,
+    userBubbleRadius: const BorderRadius.only(
+      topLeft: Radius.circular(18),
+      topRight: Radius.circular(18),
+      bottomLeft: Radius.circular(18),
+      bottomRight: Radius.circular(4),
+    ),
+    assistantBubbleRadius: const BorderRadius.only(
+      topLeft: Radius.circular(18),
+      topRight: Radius.circular(18),
+      bottomLeft: Radius.circular(4),
+      bottomRight: Radius.circular(18),
+    ),
+    userBubblePadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+    assistantBubblePadding:
+        const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+    inputRadius: const BorderRadius.all(Radius.circular(16)),
+    sendButtonSize: 46,
+    maxBubbleWidthFraction: 0.82,
+    showTimestamps: true,
+    assistantTextStyle: const TextStyle(height: 1.45),
+  );
+}
+
 class ExampleApp extends StatefulWidget {
   const ExampleApp({super.key});
 
@@ -38,6 +76,9 @@ class ExampleApp extends StatefulWidget {
 
 class _ExampleAppState extends State<ExampleApp> {
   ThemeMode _themeMode = ThemeMode.light;
+
+  /// Toggles between the package defaults and the fully-customized look.
+  bool _customized = true;
 
   ProviderKind _kind = ProviderKind.demo;
   final _modelCtl = TextEditingController(text: ProviderKind.demo.defaultModel);
@@ -78,6 +119,79 @@ class _ExampleAppState extends State<ExampleApp> {
     super.dispose();
   }
 
+  // ---------------------------------------------------------------------------
+  // CUSTOMIZATION SHOWCASE
+  // Every knob below is optional. Remove `theme:`, `icons:` and `builders:`
+  // from the widgets and you get the stock look.
+  // ---------------------------------------------------------------------------
+
+  /// 1) THEME — colours, fonts, per-role bubble shape/padding, input, sizes,
+  ///    timestamps, bubble width… (defined as a top-level function below so it
+  ///    is always built from a context *under* MaterialApp).
+
+  /// 2) ICONS — swap any glyph/logo for your own widget.
+  AiChatIcons get _chatIcons => _customized
+      ? const AiChatIcons(
+          launcher: Icon(Icons.support_agent_rounded, color: Colors.white),
+          avatar: CircleAvatar(
+            backgroundColor: Colors.white,
+            child:
+                Icon(Icons.support_agent_rounded, color: _brandDeep, size: 18),
+          ),
+          send: Icon(Icons.send_rounded, color: Colors.white, size: 20),
+          stop: Icon(Icons.stop_circle_rounded, color: Colors.white, size: 24),
+          copy: Icon(Icons.content_copy_rounded, size: 15),
+          regenerate: Icon(Icons.restart_alt_rounded, size: 16),
+          scrollToBottom: Icon(Icons.arrow_downward_rounded, size: 20),
+          close: Icon(Icons.keyboard_arrow_down_rounded),
+        )
+      : const AiChatIcons();
+
+  /// 3) BUILDERS — replace whole elements. Shown: per-message avatar, a custom
+  ///    typing indicator, and a custom timestamp. The remaining slots
+  ///    (message, userAvatar, header, launcher, input, sendButton,
+  ///    scrollToBottom) work the same way — see the README.
+  AiChatBuilders get _chatBuilders => _customized
+      ? AiChatBuilders(
+          assistantAvatar: (context, message, theme) => const CircleAvatar(
+            radius: 14,
+            backgroundColor: _brandDeep,
+            child: Icon(Icons.auto_awesome, size: 14, color: Colors.white),
+          ),
+          typingIndicator: (context, theme) => Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text('typing',
+                  style: TextStyle(color: theme.mutedColor, fontSize: 12.5)),
+              const SizedBox(width: 6),
+              SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  color: theme.mutedColor,
+                ),
+              ),
+            ],
+          ),
+          timestamp: (context, message, theme) {
+            final t = message.timestamp;
+            final h = t.hour % 12 == 0 ? 12 : t.hour % 12;
+            final m = t.minute.toString().padLeft(2, '0');
+            final ap = t.hour < 12 ? 'AM' : 'PM';
+            return Padding(
+              padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
+              child: Text(
+                '$h:$m $ap',
+                style: TextStyle(
+                    color: theme.mutedColor.withValues(alpha: 0.8),
+                    fontSize: 10.5),
+              ),
+            );
+          },
+        )
+      : const AiChatBuilders();
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -85,12 +199,12 @@ class _ExampleAppState extends State<ExampleApp> {
       debugShowCheckedModeBanner: false,
       themeMode: _themeMode,
       theme: ThemeData(
-        colorSchemeSeed: const Color(0xFF2F6BFF),
+        colorSchemeSeed: _brandTeal,
         brightness: Brightness.light,
         useMaterial3: true,
       ),
       darkTheme: ThemeData(
-        colorSchemeSeed: const Color(0xFF2F6BFF),
+        colorSchemeSeed: _brandTeal,
         brightness: Brightness.dark,
         useMaterial3: true,
       ),
@@ -103,15 +217,9 @@ class _ExampleAppState extends State<ExampleApp> {
             title: 'AI Assistant',
             subtitle: 'Online — replies instantly',
             draggable: true,
-            icons: const AiChatIcons(
-              send: Icon(Icons.send_rounded),
-              stop: Icon(Icons.stop_rounded),
-              launcher: Icon(Icons.chat_outlined),
-              avatar: CircleAvatar(
-                backgroundColor: Colors.red,
-                child: Icon(Icons.smart_toy_sharp, color: Colors.yellow),
-              ),
-            ),
+            theme: buildChatTheme(context, _customized),
+            icons: _chatIcons,
+            builders: _chatBuilders,
           ),
         ],
       ),
@@ -119,17 +227,19 @@ class _ExampleAppState extends State<ExampleApp> {
         chat: _chat,
         kind: _kind,
         themeMode: _themeMode,
+        customized: _customized,
+        chatIcons: _chatIcons,
+        chatBuilders: _chatBuilders,
         onToggleTheme: () => setState(() {
           _themeMode =
               _themeMode == ThemeMode.light ? ThemeMode.dark : ThemeMode.light;
         }),
+        onToggleCustom: () => setState(() => _customized = !_customized),
         onOpenSettings: _openSettings,
       ),
     );
   }
 
-  // [sheetContext] must come from below MaterialApp (e.g. the HomeScreen build
-  // context) so the modal can find Navigator / Overlay / MaterialLocalizations.
   Future<void> _openSettings(BuildContext sheetContext) async {
     await showModalBottomSheet<void>(
       context: sheetContext,
@@ -232,14 +342,22 @@ class HomeScreen extends StatelessWidget {
     required this.chat,
     required this.kind,
     required this.themeMode,
+    required this.customized,
+    required this.chatIcons,
+    required this.chatBuilders,
     required this.onToggleTheme,
+    required this.onToggleCustom,
     required this.onOpenSettings,
   });
 
   final ChatController chat;
   final ProviderKind kind;
   final ThemeMode themeMode;
+  final bool customized;
+  final AiChatIcons chatIcons;
+  final AiChatBuilders chatBuilders;
   final VoidCallback onToggleTheme;
+  final VoidCallback onToggleCustom;
   final ValueChanged<BuildContext> onOpenSettings;
 
   @override
@@ -248,6 +366,13 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('ai_chat_stream'),
         actions: [
+          IconButton(
+            tooltip: customized ? 'Custom UI: on' : 'Custom UI: off',
+            onPressed: onToggleCustom,
+            icon: Icon(customized
+                ? Icons.palette_rounded
+                : Icons.palette_outlined),
+          ),
           IconButton(
             tooltip: 'Toggle theme',
             onPressed: onToggleTheme,
@@ -269,6 +394,9 @@ class HomeScreen extends StatelessWidget {
       ),
       body: AiChatView(
         controller: chat,
+        theme: buildChatTheme(context, customized),
+        icons: chatIcons,
+        builders: chatBuilders,
         emptyState: Padding(
           padding: const EdgeInsets.all(32),
           child: Column(
@@ -277,14 +405,13 @@ class HomeScreen extends StatelessWidget {
               Icon(Icons.auto_awesome,
                   size: 48, color: Theme.of(context).colorScheme.primary),
               const SizedBox(height: 12),
-              Text(
-                'Say hello 👋',
-                style: Theme.of(context).textTheme.titleLarge,
-              ),
+              Text('Say hello 👋',
+                  style: Theme.of(context).textTheme.titleLarge),
               const SizedBox(height: 6),
               Text(
                 'Streaming with the ${kind.label} provider.\n'
-                'Tap the floating bubble to chat from anywhere.',
+                'Tap the palette icon to toggle the custom UI, or the '
+                'floating bubble to chat from anywhere.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodyMedium,
               ),

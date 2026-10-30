@@ -1,9 +1,15 @@
 import 'package:flutter/material.dart';
 
+import 'chat_builders.dart';
 import 'chat_theme.dart';
 
 /// The bottom input row: a multi-line text field and a button that toggles
 /// between **Send** and **Stop** depending on streaming state.
+///
+/// Styled entirely from [AiChatTheme] (fill, radius, text/hint styles, padding,
+/// button colour & size). Pass [sendIcon] / [stopIcon] to swap glyphs, or
+/// [sendButtonBuilder] to replace the button. To replace the whole bar, use
+/// `AiChatBuilders.input` on `AiChatView` / `AiChatBubble`.
 class ChatInputBar extends StatefulWidget {
   /// Creates an input bar.
   const ChatInputBar({
@@ -16,6 +22,7 @@ class ChatInputBar extends StatefulWidget {
     this.hintText = 'Message…',
     this.sendIcon,
     this.stopIcon,
+    this.sendButtonBuilder,
   });
 
   /// Resolved visual theme.
@@ -41,6 +48,9 @@ class ChatInputBar extends StatefulWidget {
 
   /// Custom glyph for the stop button (default: a stop square).
   final Widget? stopIcon;
+
+  /// Optional builder to replace the send/stop button entirely.
+  final AiSendButtonBuilder? sendButtonBuilder;
 
   @override
   State<ChatInputBar> createState() => _ChatInputBarState();
@@ -78,7 +88,28 @@ class _ChatInputBarState extends State<ChatInputBar> {
   @override
   Widget build(BuildContext context) {
     final theme = widget.theme;
-    final fieldFill = theme.assistantBubbleColor.withValues(alpha: 0.6);
+    final enabled = widget.isStreaming || (_hasText && widget.enabled);
+
+    final Widget button = widget.sendButtonBuilder != null
+        ? widget.sendButtonBuilder!(
+            context,
+            AiSendButtonState(
+              theme: theme,
+              isStreaming: widget.isStreaming,
+              enabled: enabled,
+              onSend: _send,
+              onStop: widget.onStop,
+            ),
+          )
+        : _SendStopButton(
+            theme: theme,
+            isStreaming: widget.isStreaming,
+            enabled: enabled,
+            onSend: _send,
+            onStop: widget.onStop,
+            sendIcon: widget.sendIcon,
+            stopIcon: widget.stopIcon,
+          );
 
     return SafeArea(
       top: false,
@@ -96,32 +127,28 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 maxLines: 5,
                 textInputAction: TextInputAction.newline,
                 keyboardType: TextInputType.multiline,
-                style: TextStyle(color: theme.assistantTextColor, fontSize: theme.fontSize),
+                style: (TextStyle(
+                  color: theme.assistantTextColor,
+                  fontSize: theme.fontSize,
+                  fontFamily: theme.fontFamily,
+                )).merge(theme.inputTextStyle),
                 decoration: InputDecoration(
                   hintText: widget.hintText,
-                  hintStyle: TextStyle(color: theme.mutedColor),
+                  hintStyle: theme.hintStyle ??
+                      TextStyle(color: theme.mutedColor),
                   filled: true,
-                  fillColor: fieldFill,
+                  fillColor: theme.effectiveInputFillColor,
                   isDense: true,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: theme.inputContentPadding,
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(24),
+                    borderRadius: theme.inputRadius,
                     borderSide: BorderSide.none,
                   ),
                 ),
               ),
             ),
             const SizedBox(width: 8),
-            _SendStopButton(
-              theme: theme,
-              isStreaming: widget.isStreaming,
-              enabled: widget.isStreaming || (_hasText && widget.enabled),
-              onSend: _send,
-              onStop: widget.onStop,
-              sendIcon: widget.sendIcon,
-              stopIcon: widget.stopIcon,
-            ),
+            button,
           ],
         ),
       ),
@@ -150,8 +177,9 @@ class _SendStopButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color =
-        enabled ? theme.accentColor : theme.mutedColor.withValues(alpha: 0.4);
+    final color = enabled
+        ? theme.effectiveSendButtonColor
+        : theme.mutedColor.withValues(alpha: 0.4);
     final glyph = isStreaming
         ? (stopIcon ??
             Icon(Icons.stop_rounded, color: theme.userTextColor, size: 22))
@@ -165,8 +193,8 @@ class _SendStopButton extends StatelessWidget {
       child: InkWell(
         onTap: enabled ? (isStreaming ? onStop : onSend) : null,
         child: SizedBox(
-          width: 44,
-          height: 44,
+          width: theme.sendButtonSize,
+          height: theme.sendButtonSize,
           child: Center(child: glyph),
         ),
       ),

@@ -21,6 +21,8 @@ class AiChatMarkdown extends StatelessWidget {
     required this.codeBackground,
     required this.codeTextColor,
     required this.linkColor,
+    this.codeFontFamily = 'monospace',
+    this.codeRadius = const BorderRadius.all(Radius.circular(10)),
   });
 
   /// The raw Markdown text.
@@ -37,6 +39,12 @@ class AiChatMarkdown extends StatelessWidget {
 
   /// Colour for (non-tappable) links.
   final Color linkColor;
+
+  /// Font family for code (inline and blocks).
+  final String codeFontFamily;
+
+  /// Corner radius of fenced code blocks.
+  final BorderRadius codeRadius;
 
   @override
   Widget build(BuildContext context) {
@@ -61,6 +69,8 @@ class AiChatMarkdown extends StatelessWidget {
           language: block.language,
           background: codeBackground,
           textColor: codeTextColor,
+          fontFamily: codeFontFamily,
+          radius: codeRadius,
         );
       case _BlockType.heading:
         final scale = switch (block.level) {
@@ -234,7 +244,7 @@ class AiChatMarkdown extends StatelessWidget {
           spans.add(TextSpan(
             text: text.substring(i + 1, close),
             style: base.copyWith(
-              fontFamily: 'monospace',
+              fontFamily: codeFontFamily,
               backgroundColor: codeBackground.withValues(alpha: 0.12),
               color: base.color,
             ),
@@ -327,12 +337,16 @@ class _CodeBlock extends StatelessWidget {
     required this.language,
     required this.background,
     required this.textColor,
+    required this.fontFamily,
+    required this.radius,
   });
 
   final String code;
   final String? language;
   final Color background;
   final Color textColor;
+  final String fontFamily;
+  final BorderRadius radius;
 
   @override
   Widget build(BuildContext context) {
@@ -341,7 +355,7 @@ class _CodeBlock extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: radius,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -355,7 +369,7 @@ class _CodeBlock extends StatelessWidget {
                   style: TextStyle(
                     color: textColor.withValues(alpha: 0.6),
                     fontSize: 11,
-                    fontFamily: 'monospace',
+                    fontFamily: fontFamily,
                   ),
                 ),
               ),
@@ -389,7 +403,7 @@ class _CodeBlock extends StatelessWidget {
               code,
               style: TextStyle(
                 color: textColor,
-                fontFamily: 'monospace',
+                fontFamily: fontFamily,
                 fontSize: 13,
                 height: 1.4,
               ),

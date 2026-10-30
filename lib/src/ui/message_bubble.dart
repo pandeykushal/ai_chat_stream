@@ -3,26 +3,34 @@ import 'package:flutter/services.dart';
 
 import '../models/message.dart';
 import '../models/message_status.dart';
+import 'chat_builders.dart';
+import 'chat_icons.dart';
 import 'chat_theme.dart';
 import 'markdown_text.dart';
 import 'typing_indicator.dart';
 
-/// Signature for overriding how a message's content is rendered.
+/// Signature for overriding how a message's text content is rendered.
 typedef MessageContentBuilder = Widget Function(
   BuildContext context,
   Message message,
   AiChatTheme theme,
 );
 
-/// Renders a single [Message] as a chat bubble, with role-based alignment and
-/// styling, Markdown for assistant replies, a typing indicator / streaming
-/// cursor, inline error state, and copy / regenerate actions.
+/// Renders a single [Message] as a chat bubble: role-based alignment and
+/// styling, an optional avatar, Markdown for assistant replies, a typing
+/// indicator / streaming cursor, an inline error state, an optional timestamp,
+/// and copy / regenerate actions.
+///
+/// Fully customisable via [theme] (colours, fonts, padding, radius), [icons]
+/// (action glyphs) and [builders] (whole-element replacement).
 class MessageBubble extends StatelessWidget {
   /// Creates a bubble for [message].
   const MessageBubble({
     super.key,
     required this.message,
     required this.theme,
+    this.icons = const AiChatIcons(),
+    this.builders = const AiChatBuilders(),
     this.onRegenerate,
     this.contentBuilder,
     this.showActions = true,
@@ -33,6 +41,12 @@ class MessageBubble extends StatelessWidget {
 
   /// Resolved visual theme.
   final AiChatTheme theme;
+
+  /// Overridable action glyphs (copy / regenerate / retry).
+  final AiChatIcons icons;
+
+  /// Optional whole-element builders (message / avatar / typing / timestamp).
+  final AiChatBuilders builders;
 
   /// Called when the user taps **Regenerate** / **Retry** on this message.
   final VoidCallback? onRegenerate;
@@ -47,60 +61,77 @@ class MessageBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final align = _isUser ? Alignment.centerRight : Alignment.centerLeft;
-    final bubbleColor =
-        _isUser ? theme.userBubbleColor : theme.assistantBubbleColor;
-    final textColor =
-        _isUser ? theme.userTextColor : theme.assistantTextColor;
+    final defaultBubble = _buildRow(context);
+    if (builders.message != null) {
+      return builders.message!(context, message, theme, defaultBubble);
+    }
+    return defaultBubble;
+  }
+
+  Widget _buildRow(BuildContext context) {
+    final avatarBuilder =
+        _isUser ? builders.userAvatar : builders.assistantAvatar;
+    final avatar = avatarBuilder?.call(context, message, theme);
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth * 0.86;
-        return Align(
-          alignment: align,
+        final maxWidth =
+            constraints.maxWidth * theme.maxBubbleWidthFraction;
+        final column = Flexible(
           child: Column(
             crossAxisAlignment:
                 _isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
               ConstrainedBox(
                 constraints: BoxConstraints(maxWidth: maxWidth),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 10,
-                  ),
-                  decoration: BoxDecoration(
-                    color: bubbleColor,
-                    borderRadius: theme.bubbleRadius,
-                  ),
-                  child: _buildContent(context, textColor),
-                ),
+                child: _buildBubble(context),
               ),
               if (!_isUser && showActions && !message.status.isInProgress)
-                _ActionsRow(
-                  message: message,
-                  theme: theme,
-                  onRegenerate: onRegenerate,
-                ),
+                _buildActions(context),
+              if (theme.showTimestamps) _buildTimestamp(context),
             ],
           ),
+        );
+
+        return Row(
+          mainAxisAlignment:
+              _isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (avatar != null && !_isUser) ...[avatar, const SizedBox(width: 8)],
+            column,
+            if (avatar != null && _isUser) ...[const SizedBox(width: 8), avatar],
+          ],
         );
       },
     );
   }
 
-  Widget _buildContent(BuildContext context, Color textColor) {
-    final baseStyle = TextStyle(
-      color: textColor,
-      fontSize: theme.fontSize,
-      height: 1.4,
+  Widget _buildBubble(BuildContext context) {
+    final bubbleColor =
+        _isUser ? theme.userBubbleColor : theme.assistantBubbleColor;
+    return Container(
+      padding: _isUser ? theme.userBubblePadding : theme.assistantBubblePadding,
+      decoration: BoxDecoration(
+        color: bubbleColor,
+        borderRadius: _isUser
+            ? theme.effectiveUserBubbleRadius
+            : theme.effectiveAssistantBubbleRadius,
+      ),
+      child: _buildContent(context),
     );
+  }
 
-    // Empty + in-progress → typing dots.
+  Widget _buildContent(BuildContext context) {
+    final baseStyle = theme.messageTextStyle(_isUser);
+
+    // Empty + in-progress → typing indicator.
     if (message.content.isEmpty && message.status.isInProgress) {
       return Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
-        child: TypingIndicator(color: theme.mutedColor),
+        child: builders.typingIndicator?.call(context, theme) ??
+            TypingIndicator(color: theme.effectiveTypingIndicatorColor),
       );
     }
 
@@ -112,7 +143,9 @@ class MessageBubble extends StatelessWidget {
               style: baseStyle,
               codeBackground: theme.codeBackground,
               codeTextColor: theme.codeTextColor,
-              linkColor: theme.accentColor,
+              linkColor: theme.effectiveLinkColor,
+              codeFontFamily: theme.effectiveCodeFontFamily,
+              codeRadius: theme.codeBlockRadius,
             ));
 
     return Column(
@@ -123,7 +156,7 @@ class MessageBubble extends StatelessWidget {
         if (message.status == MessageStatus.streaming)
           Padding(
             padding: const EdgeInsets.only(top: 4),
-            child: _BlinkingCursor(color: theme.accentColor),
+            child: _BlinkingCursor(color: theme.effectiveLinkColor),
           ),
         if (message.status.isError) ...[
           const SizedBox(height: 6),
@@ -144,21 +177,8 @@ class MessageBubble extends StatelessWidget {
       ],
     );
   }
-}
 
-class _ActionsRow extends StatelessWidget {
-  const _ActionsRow({
-    required this.message,
-    required this.theme,
-    required this.onRegenerate,
-  });
-
-  final Message message;
-  final AiChatTheme theme;
-  final VoidCallback? onRegenerate;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildActions(BuildContext context) {
     final isError = message.status.isError;
     return Padding(
       padding: const EdgeInsets.only(top: 2, left: 4),
@@ -166,10 +186,10 @@ class _ActionsRow extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           if (message.content.isNotEmpty)
-            _IconAction(
-              icon: Icons.copy_rounded,
+            _ActionButton(
               tooltip: 'Copy',
-              color: theme.mutedColor,
+              glyph: icons.copy ??
+                  Icon(Icons.copy_rounded, size: 15, color: theme.mutedColor),
               onTap: () async {
                 await Clipboard.setData(ClipboardData(text: message.content));
                 if (context.mounted) {
@@ -183,29 +203,48 @@ class _ActionsRow extends StatelessWidget {
               },
             ),
           if (onRegenerate != null)
-            _IconAction(
-              icon: isError ? Icons.refresh_rounded : Icons.autorenew_rounded,
+            _ActionButton(
               tooltip: isError ? 'Retry' : 'Regenerate',
-              color: isError ? theme.errorColor : theme.mutedColor,
+              glyph: (isError ? (icons.retry ?? icons.regenerate) : icons.regenerate) ??
+                  Icon(
+                    isError ? Icons.refresh_rounded : Icons.autorenew_rounded,
+                    size: 15,
+                    color: isError ? theme.errorColor : theme.mutedColor,
+                  ),
               onTap: onRegenerate!,
             ),
         ],
       ),
     );
   }
+
+  Widget _buildTimestamp(BuildContext context) {
+    if (builders.timestamp != null) {
+      return builders.timestamp!(context, message, theme);
+    }
+    final t = message.timestamp;
+    final hh = t.hour.toString().padLeft(2, '0');
+    final mm = t.minute.toString().padLeft(2, '0');
+    return Padding(
+      padding: const EdgeInsets.only(top: 2, left: 4, right: 4),
+      child: Text(
+        '$hh:$mm',
+        style: theme.timestampStyle ??
+            TextStyle(color: theme.mutedColor, fontSize: 10.5),
+      ),
+    );
+  }
 }
 
-class _IconAction extends StatelessWidget {
-  const _IconAction({
-    required this.icon,
+class _ActionButton extends StatelessWidget {
+  const _ActionButton({
     required this.tooltip,
-    required this.color,
+    required this.glyph,
     required this.onTap,
   });
 
-  final IconData icon;
   final String tooltip;
-  final Color color;
+  final Widget glyph;
   final VoidCallback onTap;
 
   @override
@@ -213,9 +252,8 @@ class _IconAction extends StatelessWidget {
     return IconButton(
       tooltip: tooltip,
       onPressed: onTap,
-      icon: Icon(icon),
+      icon: glyph,
       iconSize: 15,
-      color: color,
       visualDensity: VisualDensity.compact,
       padding: const EdgeInsets.all(4),
       constraints: const BoxConstraints(),

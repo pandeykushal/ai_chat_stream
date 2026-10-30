@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../controller/chat_controller.dart';
+import 'chat_builders.dart';
 import 'chat_icons.dart';
 import 'chat_input_bar.dart';
 import 'chat_theme.dart';
@@ -34,6 +35,7 @@ class AiChatBubble extends StatefulWidget {
     required this.controller,
     this.theme,
     this.icons = const AiChatIcons(),
+    this.builders = const AiChatBuilders(),
     this.contentBuilder,
     this.alignment = Alignment.bottomRight,
     this.margin = const EdgeInsets.all(16),
@@ -56,8 +58,11 @@ class AiChatBubble extends StatefulWidget {
   final AiChatTheme? theme;
 
   /// Overridable logos / glyphs: launcher logo, header avatar, send & stop
-  /// icons. Leave slots null to keep the defaults.
+  /// icons, close, copy, etc. Leave slots null to keep the defaults.
   final AiChatIcons icons;
+
+  /// Whole-element builders (header, launcher, message, avatar, input, …).
+  final AiChatBuilders builders;
 
   /// Optional custom renderer for message content.
   final MessageContentBuilder? contentBuilder;
@@ -249,17 +254,20 @@ class _BubbleBodyState extends State<_BubbleBody>
             ? h - size - widget.host.margin.bottom - safe.bottom
             : widget.host.margin.top + safe.top);
 
+    final unread = widget.host.showUnreadBadge ? _unread : 0;
     final launcher = Opacity(
       opacity: (1 - t).clamp(0.0, 1.0).toDouble(),
       child: Transform.scale(
         scale: 1 - 0.25 * t,
-        child: _LauncherButton(
-          theme: theme,
-          size: size,
-          icon: widget.host.icons.launcher,
-          unread: widget.host.showUnreadBadge ? _unread : 0,
-          onTap: _toggle,
-        ),
+        child: widget.host.builders.launcher
+                ?.call(context, theme, unread, _toggle) ??
+            _LauncherButton(
+              theme: theme,
+              size: size,
+              icon: widget.host.icons.launcher,
+              unread: unread,
+              onTap: _toggle,
+            ),
       ),
     );
 
@@ -333,38 +341,58 @@ class _BubbleBodyState extends State<_BubbleBody>
           scale: 0.7 + 0.3 * t,
           alignment: widget.host.alignment,
           child: Material(
-            elevation: 12,
-            borderRadius: BorderRadius.circular(18),
+            elevation: theme.panelElevation,
+            borderRadius: theme.panelRadius,
             clipBehavior: Clip.antiAlias,
             color: theme.background,
             child: Column(
               children: [
-                _PanelHeader(
-                  theme: theme,
-                  title: widget.host.title,
-                  subtitle: widget.host.subtitle,
-                  avatar: widget.host.icons.avatar,
-                  onClose: _close,
-                ),
+                widget.host.builders.header?.call(context, theme, _close) ??
+                    _PanelHeader(
+                      theme: theme,
+                      title: widget.host.title,
+                      subtitle: widget.host.subtitle,
+                      avatar: widget.host.icons.avatar,
+                      closeIcon: widget.host.icons.close,
+                      onClose: _close,
+                    ),
                 Expanded(
                   child: ChatMessageList(
                     controller: widget.host.controller,
                     theme: theme,
+                    icons: widget.host.icons,
+                    builders: widget.host.builders,
                     contentBuilder: widget.host.contentBuilder,
                     emptyState: widget.host.emptyState,
                   ),
                 ),
                 ListenableBuilder(
                   listenable: widget.host.controller,
-                  builder: (context, _) => ChatInputBar(
-                    theme: theme,
-                    isStreaming: widget.host.controller.isStreaming,
-                    hintText: widget.host.inputHint,
-                    onSend: widget.host.controller.send,
-                    onStop: widget.host.controller.stop,
-                    sendIcon: widget.host.icons.send,
-                    stopIcon: widget.host.icons.stop,
-                  ),
+                  builder: (context, _) {
+                    if (widget.host.builders.input != null) {
+                      return widget.host.builders.input!(
+                        context,
+                        AiInputState(
+                          theme: theme,
+                          isStreaming: widget.host.controller.isStreaming,
+                          enabled: true,
+                          hintText: widget.host.inputHint,
+                          onSend: widget.host.controller.send,
+                          onStop: widget.host.controller.stop,
+                        ),
+                      );
+                    }
+                    return ChatInputBar(
+                      theme: theme,
+                      isStreaming: widget.host.controller.isStreaming,
+                      hintText: widget.host.inputHint,
+                      onSend: widget.host.controller.send,
+                      onStop: widget.host.controller.stop,
+                      sendIcon: widget.host.icons.send,
+                      stopIcon: widget.host.icons.stop,
+                      sendButtonBuilder: widget.host.builders.sendButton,
+                    );
+                  },
                 ),
               ],
             ),
@@ -396,9 +424,9 @@ class _LauncherButton extends StatelessWidget {
       clipBehavior: Clip.none,
       children: [
         Material(
-          color: theme.accentColor,
+          color: theme.effectiveLauncherColor,
           shape: const CircleBorder(),
-          elevation: 6,
+          elevation: theme.launcherElevation,
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: onTap,
@@ -409,7 +437,7 @@ class _LauncherButton extends StatelessWidget {
                 child: icon ??
                     Icon(
                       Icons.chat_bubble_rounded,
-                      color: theme.userTextColor,
+                      color: theme.effectiveLauncherIconColor,
                       size: size * 0.44,
                     ),
               ),
@@ -452,6 +480,7 @@ class _PanelHeader extends StatelessWidget {
     required this.subtitle,
     required this.onClose,
     this.avatar,
+    this.closeIcon,
   });
 
   final AiChatTheme theme;
@@ -459,6 +488,7 @@ class _PanelHeader extends StatelessWidget {
   final String? subtitle;
   final VoidCallback onClose;
   final Widget? avatar;
+  final Widget? closeIcon;
 
   @override
   Widget build(BuildContext context) {
@@ -514,7 +544,7 @@ class _PanelHeader extends StatelessWidget {
           ),
           IconButton(
             onPressed: onClose,
-            icon: const Icon(Icons.close_rounded),
+            icon: closeIcon ?? const Icon(Icons.close_rounded),
             color: fg,
             iconSize: 20,
             tooltip: 'Close',
