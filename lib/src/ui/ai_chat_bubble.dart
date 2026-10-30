@@ -100,7 +100,40 @@ class AiChatBubble extends StatefulWidget {
   State<AiChatBubble> createState() => _AiChatBubbleState();
 }
 
-class _AiChatBubbleState extends State<AiChatBubble>
+class _AiChatBubbleState extends State<AiChatBubble> {
+  late final OverlayEntry _entry =
+      OverlayEntry(builder: (context) => _BubbleBody(host: widget));
+
+  @override
+  void didUpdateWidget(covariant AiChatBubble oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // Rebuild the hosted body with the latest configuration.
+    _entry.markNeedsBuild();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // A self-contained Overlay lets the bubble live anywhere it is mounted —
+    // even as a sibling of the app's Navigator (e.g. in MaterialApp.builder) —
+    // while still giving the panel an Overlay ancestor (required by Tooltip and
+    // other floating widgets) and tight, bounded constraints.
+    return Overlay(initialEntries: [_entry]);
+  }
+}
+
+/// The launcher + expandable panel, hosted inside [_AiChatBubbleState]'s
+/// Overlay so it has a valid Overlay ancestor wherever the bubble is placed.
+class _BubbleBody extends StatefulWidget {
+  const _BubbleBody({required this.host});
+
+  /// The public [AiChatBubble] carrying all configuration.
+  final AiChatBubble host;
+
+  @override
+  State<_BubbleBody> createState() => _BubbleBodyState();
+}
+
+class _BubbleBodyState extends State<_BubbleBody>
     with SingleTickerProviderStateMixin {
   late final AnimationController _anim = AnimationController(
     vsync: this,
@@ -115,20 +148,20 @@ class _AiChatBubbleState extends State<AiChatBubble>
   @override
   void initState() {
     super.initState();
-    _seenCount = widget.controller.messages.length;
-    widget.controller.addListener(_onControllerChanged);
+    _seenCount = widget.host.controller.messages.length;
+    widget.host.controller.addListener(_onControllerChanged);
   }
 
   @override
   void dispose() {
-    widget.controller.removeListener(_onControllerChanged);
+    widget.host.controller.removeListener(_onControllerChanged);
     _anim.dispose();
     super.dispose();
   }
 
   void _onControllerChanged() {
     if (_open) return;
-    final messages = widget.controller.messages;
+    final messages = widget.host.controller.messages;
     var count = 0;
     for (var i = _seenCount; i < messages.length; i++) {
       if (messages[i].isAssistant && messages[i].content.isNotEmpty) count++;
@@ -141,27 +174,27 @@ class _AiChatBubbleState extends State<AiChatBubble>
   void _openPanel() {
     setState(() {
       _open = true;
-      _seenCount = widget.controller.messages.length;
+      _seenCount = widget.host.controller.messages.length;
       _unread = 0;
     });
     _anim.forward();
-    widget.onOpen?.call();
+    widget.host.onOpen?.call();
   }
 
   void _close() {
     setState(() => _open = false);
-    _seenCount = widget.controller.messages.length;
+    _seenCount = widget.host.controller.messages.length;
     _anim.reverse();
     FocusManager.instance.primaryFocus?.unfocus();
-    widget.onClose?.call();
+    widget.host.onClose?.call();
   }
 
-  bool get _isRight => widget.alignment.x > 0;
-  bool get _isBottom => widget.alignment.y > 0;
+  bool get _isRight => widget.host.alignment.x > 0;
+  bool get _isBottom => widget.host.alignment.y > 0;
 
   @override
   Widget build(BuildContext context) {
-    final theme = AiChatTheme.resolve(context, widget.theme);
+    final theme = AiChatTheme.resolve(context, widget.host.theme);
     final media = MediaQuery.of(context);
     final safe = media.padding;
     final insets = media.viewInsets;
@@ -204,15 +237,15 @@ class _AiChatBubbleState extends State<AiChatBubble>
     EdgeInsets safe,
     double t,
   ) {
-    final size = widget.bubbleSize;
+    final size = widget.host.bubbleSize;
     final left = _dragTopLeft?.dx ??
         (_isRight
-            ? w - size - widget.margin.right
-            : widget.margin.left + safe.left);
+            ? w - size - widget.host.margin.right
+            : widget.host.margin.left + safe.left);
     final top = _dragTopLeft?.dy ??
         (_isBottom
-            ? h - size - widget.margin.bottom - safe.bottom
-            : widget.margin.top + safe.top);
+            ? h - size - widget.host.margin.bottom - safe.bottom
+            : widget.host.margin.top + safe.top);
 
     final launcher = Opacity(
       opacity: (1 - t).clamp(0.0, 1.0).toDouble(),
@@ -221,8 +254,8 @@ class _AiChatBubbleState extends State<AiChatBubble>
         child: _LauncherButton(
           theme: theme,
           size: size,
-          icon: widget.bubbleIcon,
-          unread: widget.showUnreadBadge ? _unread : 0,
+          icon: widget.host.bubbleIcon,
+          unread: widget.host.showUnreadBadge ? _unread : 0,
           onTap: _toggle,
         ),
       ),
@@ -233,18 +266,18 @@ class _AiChatBubbleState extends State<AiChatBubble>
       top: top,
       child: IgnorePointer(
         ignoring: t > 0.5,
-        child: widget.draggable
+        child: widget.host.draggable
             ? GestureDetector(
                 onPanUpdate: (d) {
                   setState(() {
                     final nx = (left + d.delta.dx)
-                        .clamp(
-                            widget.margin.left, w - size - widget.margin.right)
+                        .clamp(widget.host.margin.left,
+                            w - size - widget.host.margin.right)
                         .toDouble();
                     final ny = (top + d.delta.dy)
                         .clamp(
-                          widget.margin.top + safe.top,
-                          h - size - widget.margin.bottom - safe.bottom,
+                          widget.host.margin.top + safe.top,
+                          h - size - widget.host.margin.bottom - safe.bottom,
                         )
                         .toDouble();
                     _dragTopLeft = Offset(nx, ny);
@@ -266,24 +299,26 @@ class _AiChatBubbleState extends State<AiChatBubble>
     EdgeInsets insets,
     double t,
   ) {
-    final panelW = widget.panelSize.width
-        .clamp(0.0, w - widget.margin.left - widget.margin.right)
+    final panelW = widget.host.panelSize.width
+        .clamp(0.0, w - widget.host.margin.left - widget.host.margin.right)
         .toDouble();
     final availH = h -
         safe.top -
         safe.bottom -
-        widget.margin.top -
-        widget.margin.bottom -
+        widget.host.margin.top -
+        widget.host.margin.bottom -
         insets.bottom;
-    final panelH =
-        widget.panelSize.height.clamp(220.0, availH.clamp(220.0, h)).toDouble();
+    final panelH = widget.host.panelSize.height
+        .clamp(220.0, availH.clamp(220.0, h))
+        .toDouble();
 
     final left = _isRight
-        ? w - widget.margin.right - panelW
-        : widget.margin.left + safe.left;
-    final bottom =
-        _isBottom ? widget.margin.bottom + safe.bottom + insets.bottom : null;
-    final top = _isBottom ? null : widget.margin.top + safe.top;
+        ? w - widget.host.margin.right - panelW
+        : widget.host.margin.left + safe.left;
+    final bottom = _isBottom
+        ? widget.host.margin.bottom + safe.bottom + insets.bottom
+        : null;
+    final top = _isBottom ? null : widget.host.margin.top + safe.top;
 
     return Positioned(
       left: left.clamp(0.0, w).toDouble(),
@@ -295,7 +330,7 @@ class _AiChatBubbleState extends State<AiChatBubble>
         opacity: t,
         child: Transform.scale(
           scale: 0.7 + 0.3 * t,
-          alignment: widget.alignment,
+          alignment: widget.host.alignment,
           child: Material(
             elevation: 12,
             borderRadius: BorderRadius.circular(18),
@@ -305,26 +340,26 @@ class _AiChatBubbleState extends State<AiChatBubble>
               children: [
                 _PanelHeader(
                   theme: theme,
-                  title: widget.title,
-                  subtitle: widget.subtitle,
+                  title: widget.host.title,
+                  subtitle: widget.host.subtitle,
                   onClose: _close,
                 ),
                 Expanded(
                   child: ChatMessageList(
-                    controller: widget.controller,
+                    controller: widget.host.controller,
                     theme: theme,
-                    contentBuilder: widget.contentBuilder,
-                    emptyState: widget.emptyState,
+                    contentBuilder: widget.host.contentBuilder,
+                    emptyState: widget.host.emptyState,
                   ),
                 ),
                 ListenableBuilder(
-                  listenable: widget.controller,
+                  listenable: widget.host.controller,
                   builder: (context, _) => ChatInputBar(
                     theme: theme,
-                    isStreaming: widget.controller.isStreaming,
-                    hintText: widget.inputHint,
-                    onSend: widget.controller.send,
-                    onStop: widget.controller.stop,
+                    isStreaming: widget.host.controller.isStreaming,
+                    hintText: widget.host.inputHint,
+                    onSend: widget.host.controller.send,
+                    onStop: widget.host.controller.stop,
                   ),
                 ),
               ],
