@@ -1,5 +1,8 @@
 import 'dart:convert';
 
+/// Parses a Server-Sent Events byte stream into event data payloads (for LLM
+/// APIs, usually a JSON string per event, or `[DONE]`). Buffers partial lines
+/// so tokens split across packets aren't cut.
 Stream<String> parseSse(Stream<List<int>> byteStream) async* {
   final lines =
       byteStream.transform(utf8.decoder).transform(const LineSplitter());

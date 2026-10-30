@@ -9,7 +9,11 @@ import 'llm_provider.dart';
 import 'provider_http.dart';
 import 'sse_parser.dart';
 
+/// Google's Gemini (Generative Language API). Hits
+/// `<prefix>/models/<model>:streamGenerateContent?alt=sse`. `assistant` maps to
+/// Gemini's `model` role; a system prompt becomes `systemInstruction`.
 class GeminiProvider extends LlmProvider {
+  /// Creates a Gemini provider.
   const GeminiProvider();
 
   static const String _defaultPrefix =

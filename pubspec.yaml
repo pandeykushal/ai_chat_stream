@@ -6,6 +6,9 @@ description: >-
 version: 0.1.0
 repository: https://github.com/kushalpanday/ai_chat_stream
 issue_tracker: https://github.com/kushalpanday/ai_chat_stream/issues
+homepage: https://github.com/kushalpanday
+funding:
+- https://buymeacoffee.com/kushalpandey
 topics:
   - ai
   - llm

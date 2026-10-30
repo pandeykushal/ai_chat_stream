@@ -181,6 +181,16 @@ Pure-Dart networking, so Android, iOS, web, macOS, Windows and Linux.
 - macOS: enable the `com.apple.security.network.client` entitlement.
 - Web: browsers enforce CORS, so route provider calls through your `baseUrl`.
 
+## Author
+
+Built by Kushal Panday. GitHub: [@kushalpanday](https://github.com/kushalpanday).
+
+## Support
+
+If this package saved you some time, you can
+
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/kushalpandey)
+
 ## License
 
 MIT

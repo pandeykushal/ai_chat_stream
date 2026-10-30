@@ -1,3 +1,8 @@
+/// Streaming LLM chat for Flutter: one interface for OpenAI, Claude and
+/// Gemini, a headless controller, and a full-screen view plus a floating
+/// chat bubble.
+library;
+
 export 'src/models/chat_role.dart';
 export 'src/models/message_status.dart';
 export 'src/models/message.dart';

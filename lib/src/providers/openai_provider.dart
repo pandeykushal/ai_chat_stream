@@ -9,7 +9,10 @@ import 'llm_provider.dart';
 import 'provider_http.dart';
 import 'sse_parser.dart';
 
+/// OpenAI (or any OpenAI-compatible endpoint). Hits
+/// `<baseUrl or https://api.openai.com/v1>/chat/completions`.
 class OpenAIProvider extends LlmProvider {
+  /// Creates an OpenAI provider.
   const OpenAIProvider();
 
   static const String _defaultPrefix = 'https://api.openai.com/v1';

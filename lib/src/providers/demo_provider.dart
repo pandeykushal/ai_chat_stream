@@ -6,17 +6,23 @@ import '../models/chat_role.dart';
 import '../models/message.dart';
 import 'llm_provider.dart';
 
+/// A fake provider that streams a canned reply with no key and no network.
+/// Handy for first runs, demos and tests.
 class DemoProvider extends LlmProvider {
+  /// Creates a demo provider.
   const DemoProvider({
     this.reply = _defaultReply,
     this.tokenDelay = const Duration(milliseconds: 28),
     this.failAfter,
   });
 
+  /// Builds the reply from the conversation so far.
   final String Function(List<Message> history) reply;
 
+  /// Delay between emitted chunks (use [Duration.zero] in tests).
   final Duration tokenDelay;
 
+  /// If set, throw after this many chunks (to exercise error UI).
   final int? failAfter;
 
   @override

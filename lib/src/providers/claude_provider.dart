@@ -9,12 +9,17 @@ import 'llm_provider.dart';
 import 'provider_http.dart';
 import 'sse_parser.dart';
 
+/// Anthropic's Claude (Messages API). Hits
+/// `<baseUrl or https://api.anthropic.com/v1>/messages`. `system` is lifted out
+/// of the message list, and `max_tokens` falls back to [defaultMaxTokens].
 class ClaudeProvider extends LlmProvider {
+  /// Creates a Claude provider.
   const ClaudeProvider();
 
   static const String _defaultPrefix = 'https://api.anthropic.com/v1';
   static const String _anthropicVersion = '2023-06-01';
 
+  /// Used when [LlmConfig.maxTokens] is null (Anthropic requires the field).
   static const int defaultMaxTokens = 1024;
 
   @override
