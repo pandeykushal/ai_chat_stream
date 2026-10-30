@@ -1,0 +1,22 @@
+# Dart / Flutter
+.dart_tool/
+.packages
+.pub-cache/
+.pub/
+build/
+pubspec.lock   # libraries should not commit their lockfile
+
+# IDE
+.idea/
+.vscode/
+*.iml
+
+# OS
+.DS_Store
+
+# Flutter ephemeral (example app)
+example/.flutter-plugins
+example/.flutter-plugins-dependencies
+example/android/.gradle/
+example/ios/Pods/
+example/build/
