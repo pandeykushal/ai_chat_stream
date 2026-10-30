@@ -117,8 +117,8 @@ class _ChatInputBarState extends State<ChatInputBar> {
                 )).merge(theme.inputTextStyle),
                 decoration: InputDecoration(
                   hintText: widget.hintText,
-                  hintStyle:
-                      theme.hintStyle ?? TextStyle(color: theme.mutedColor),
+                  hintStyle: theme.hintStyle ??
+                      TextStyle(color: theme.mutedColor),
                   filled: true,
                   fillColor: theme.effectiveInputFillColor,
                   isDense: true,

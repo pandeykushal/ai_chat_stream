@@ -59,7 +59,8 @@ class MessageBubble extends StatelessWidget {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        final maxWidth = constraints.maxWidth * theme.maxBubbleWidthFraction;
+        final maxWidth =
+            constraints.maxWidth * theme.maxBubbleWidthFraction;
         final column = Flexible(
           child: Column(
             crossAxisAlignment:
@@ -82,15 +83,9 @@ class MessageBubble extends StatelessWidget {
               _isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            if (avatar != null && !_isUser) ...[
-              avatar,
-              const SizedBox(width: 8)
-            ],
+            if (avatar != null && !_isUser) ...[avatar, const SizedBox(width: 8)],
             column,
-            if (avatar != null && _isUser) ...[
-              const SizedBox(width: 8),
-              avatar
-            ],
+            if (avatar != null && _isUser) ...[const SizedBox(width: 8), avatar],
           ],
         );
       },
@@ -193,9 +188,7 @@ class MessageBubble extends StatelessWidget {
           if (onRegenerate != null)
             _ActionButton(
               tooltip: isError ? 'Retry' : 'Regenerate',
-              glyph: (isError
-                      ? (icons.retry ?? icons.regenerate)
-                      : icons.regenerate) ??
+              glyph: (isError ? (icons.retry ?? icons.regenerate) : icons.regenerate) ??
                   Icon(
                     isError ? Icons.refresh_rounded : Icons.autorenew_rounded,
                     size: 15,

@@ -238,8 +238,7 @@ class _BubbleBodyState extends State<_BubbleBody>
                 onPanUpdate: (d) {
                   setState(() {
                     final nx = (left + d.delta.dx)
-                        .clamp(widget.host.margin.left,
-                            w - size - widget.host.margin.right)
+                        .clamp(widget.host.margin.left, w - size - widget.host.margin.right)
                         .toDouble();
                     final ny = (top + d.delta.dy)
                         .clamp(

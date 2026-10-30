@@ -84,8 +84,7 @@ class AiChatMarkdown extends StatelessWidget {
               Text(block.marker!, style: style),
               const SizedBox(width: 6),
               Expanded(
-                child: Text.rich(
-                    TextSpan(children: _inlineSpans(block.text, style))),
+                child: Text.rich(TextSpan(children: _inlineSpans(block.text, style))),
               ),
             ],
           ),
@@ -94,8 +93,7 @@ class AiChatMarkdown extends StatelessWidget {
         return Container(
           decoration: BoxDecoration(
             border: Border(
-              left:
-                  BorderSide(color: linkColor.withValues(alpha: 0.5), width: 3),
+              left: BorderSide(color: linkColor.withValues(alpha: 0.5), width: 3),
             ),
           ),
           padding: const EdgeInsets.only(left: 10, top: 2, bottom: 2),
@@ -232,29 +230,24 @@ class AiChatMarkdown extends StatelessWidget {
         }
       }
 
-      final bold =
-          _matchDelimited(text, i, '**') ?? _matchDelimited(text, i, '__');
+      final bold = _matchDelimited(text, i, '**') ?? _matchDelimited(text, i, '__');
       if (bold != null) {
         flushPlain();
-        spans.addAll(_inlineSpans(
-            bold.inner, base.copyWith(fontWeight: FontWeight.w700)));
+        spans.addAll(_inlineSpans(bold.inner, base.copyWith(fontWeight: FontWeight.w700)));
         i = bold.end;
         continue;
       }
 
-      final italic =
-          _matchDelimited(text, i, '*') ?? _matchDelimited(text, i, '_');
+      final italic = _matchDelimited(text, i, '*') ?? _matchDelimited(text, i, '_');
       if (italic != null) {
         flushPlain();
-        spans.addAll(_inlineSpans(
-            italic.inner, base.copyWith(fontStyle: FontStyle.italic)));
+        spans.addAll(_inlineSpans(italic.inner, base.copyWith(fontStyle: FontStyle.italic)));
         i = italic.end;
         continue;
       }
 
       if (text[i] == '[') {
-        final match =
-            RegExp(r'^\[([^\]]+)\]\(([^)]+)\)').firstMatch(text.substring(i));
+        final match = RegExp(r'^\[([^\]]+)\]\(([^)]+)\)').firstMatch(text.substring(i));
         if (match != null) {
           flushPlain();
           spans.add(TextSpan(
@@ -299,8 +292,7 @@ class _Delimited {
 enum _BlockType { paragraph, heading, bullet, ordered, quote, code, rule }
 
 class _Block {
-  const _Block(this.type, this.text,
-      {this.level = 0, this.marker, this.language});
+  const _Block(this.type, this.text, {this.level = 0, this.marker, this.language});
   final _BlockType type;
   final String text;
   final int level;

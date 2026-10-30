@@ -4,11 +4,11 @@ description: >-
   a headless controller, and two UIs: a full-screen view and a floating
   chat bubble.
 version: 0.1.0
-repository: https://github.com/kushalpanday/ai_chat_stream
-issue_tracker: https://github.com/kushalpanday/ai_chat_stream/issues
-homepage: https://github.com/kushalpanday
+repository: https://github.com/pandeykushal/ai_chat_stream
+issue_tracker: https://github.com/pandeykushal/ai_chat_stream/issues
+homepage: https://github.com/pandeykushal
 funding:
-- https://buymeacoffee.com/kushalpandey
+  - https://www.buymeacoffee.com/kushalpandey
 topics:
   - ai
   - llm

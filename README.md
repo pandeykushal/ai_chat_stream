@@ -183,13 +183,16 @@ Pure-Dart networking, so Android, iOS, web, macOS, Windows and Linux.
 
 ## Author
 
-Built by Kushal Panday. GitHub: [@kushalpanday](https://github.com/kushalpanday).
+Built by Kushal Pandey.
+
+- GitHub: [@pandeykushal](https://github.com/pandeykushal)
+- LinkedIn: [Kushal Pandey](https://www.linkedin.com/in/kushal-pandey-9aa986202/)
 
 ## Support
 
 If this package saved you some time, you can
 
-[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://buymeacoffee.com/kushalpandey)
+[![Buy Me a Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-support-FFDD00?logo=buymeacoffee&logoColor=black)](https://www.buymeacoffee.com/kushalpandey)
 
 ## License
 
